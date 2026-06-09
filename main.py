@@ -3,7 +3,7 @@
 
 import pygame
 import time
-pygame.init
+pygame.init()
 
 #screen name & size
 pygame.display.set_caption("Not Snake game")
@@ -18,16 +18,16 @@ BLACK = (0, 0, 0)
 RED = (255, 0, 0)
 GREEN = (0, 255, 0)
 
-#Snake Size 
+# Snake Size 
 snake_x = 490
 snake_y = 250
 
-#Snake size/movement coordinates
-snake_x_change = 10
-snake_y_change = 10
+# time-based snake movement
+clock = pygame.time.Clock()
 
-# Drawing snake rectangles
-pygame.draw.rect(screen, RED, [snake_x, snake_y, 20, 20]) 
+#Snake size/movement coordinates
+snake_x_change = 0
+snake_y_change = 0
 
 quit_game = False
 
@@ -35,30 +35,31 @@ while not quit_game:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             quit_game = True
-        elif event.type == pygame.K_LEFT:
-            snake_x_change = -20
-            snake_y_change = 0
-        elif event.type == pygame.K_RIGHT:
-            snake_x_change = 20
-            snake_y_change = 0
-        elif event.type == pygame.K_UP:
-            snake_x_change = 0
-            snake_y_change = -20
-        elif event.type == pygame.K_DOWN:
-            snake_x_change = 0
-            snake_y_change = 20
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_LEFT:
+                snake_x_change = -20
+                snake_y_change = 0
+            elif event.key == pygame.K_RIGHT:
+                snake_x_change = 20
+                snake_y_change = 0
+            elif event.key == pygame.K_UP:
+                snake_x_change = 0
+                snake_y_change = -20
+            elif event.key == pygame.K_DOWN:
+                snake_x_change = 0
+                snake_y_change = 20
 
     #increments
     snake_x += snake_x_change
     snake_y += snake_y_change
 
-pygame.display.update()
+    #Background
+    screen.fill (GREEN)
+    pygame.draw.rect(screen, RED, [snake_x, snake_y, 20, 20]) 
 
-# time-based snake movement
-clock = pygame.time.Clock()
+    # Drawing snake rectangles
+    pygame.display.update()
 
-#Background
-screen.fill (GREEN)
+    clock.tick (1)
 
 pygame.quit()
-quit()

@@ -1,5 +1,5 @@
 ''' FIRST DRAFT VERSION OF MY SNAKE GAME '''
-
+# test update from personal machine
 
 import pygame
 import time
@@ -27,10 +27,6 @@ snake_y = 250
 #Food Size
 food_x = 490
 food_y = 250
-
-#Centre Size
-center_x = food_x 
-center_y = food_x 
 
 # time-based snake movement
 clock = pygame.time.Clock()

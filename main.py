@@ -44,8 +44,6 @@ class Button ():    # Button Class
     
 
     def __init__(self, text, x, y, w, h, color, font, angle=0):
-        self.x = x
-        self.y = y
         self.w = w
         self.h = h
         self.color = color
@@ -54,7 +52,7 @@ class Button ():    # Button Class
         self.angle = angle # rotation angle
 
         self.surface = pygame.Surface((w, h), pygame.SRCALPHA) # creates the button surface
-        self.rect = self.surface.get_rect(topleft = (self.x, self.y)) # creates the rectangle
+        self.rect = self.surface.get_rect(topleft = (x, y)) # creates the rectangle
 
     def button_draw (self, game_window):  # draws text unto button and rotates button
         #self.surface.fill((0, 0, 0, 0))

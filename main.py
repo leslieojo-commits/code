@@ -84,6 +84,13 @@ class Button ():    # Button Class
         else:
             self.hovered = False
 
+    def handle_event(self, event):
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            if self.rect.collidepoint(event.pos):
+                return True
+            
+        return False
+
 
 class Menu():   # Menu Class
     def __init__(self, screen_width, screen_height, font, normal_color, hover_color):
@@ -148,6 +155,13 @@ class Menu():   # Menu Class
         for button in self.buttons:
             button.update(mouse_position)
 
+    def handle_event(self, event):
+        for button in self.buttons:
+             if button.handle_event(event):
+                 return button.text
+             
+        return None
+
 class Text():
     def __init__(self, text, color, font, x, y):
         self.text = text
@@ -204,17 +218,28 @@ while not quit_game:
             menu.screen_height = SCREEN_HEIGHT
             menu.screen_width = SCREEN_WIDTH
             menu.update_layout()
+        
+        action = menu.handle_event(event)
 
-    game_window.fill(BKGD_RED) # draws background colour in an hidden buffer
+        if action == "Play":
+            print("start game")
+        
+        elif action == "Settings":
+            print("Settings")
+
+        elif action == "Quit":
+            quit_game = True
+
+    
         #menu.buttons[0].button_draw(game_window)
         #menu.buttons[1].button_draw(game_window)
         #menu.buttons[2].button_draw(game_window)
         #play_button.button_draw(game_window, "Play")
     mouse_position = pygame.mouse.get_pos()
     menu.update(mouse_position)
-    menu.draw(game_window)
 
-            
+    game_window.fill(BKGD_RED) # draws background colour in an hidden buffer
+    menu.draw(game_window)          
 
     pygame.display.flip() # updates draw in the foreground 
     clock.tick(60)

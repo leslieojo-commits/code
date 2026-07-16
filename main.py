@@ -177,7 +177,65 @@ class Text():
         game_window.blit(self.surface, self.rect)
 
 
-            
+class Game:
+    def __init__(self):
+        self.running = True
+
+        self.clock = pygame.time.Clock()
+
+        self.width = SCREEN_WIDTH
+        self.height = SCREEN_HEIGHT
+
+        self.game_window = pygame.display.set_mode((self.width, self.height), pygame.RESIZABLE)
+
+        self.menu = Menu(self.width, self.height, MAIN_FONT, BTN_RED, BTN_HOVER_RED)
+
+        self.menu.create_buttons()
+        self.menu.update_layout()
+
+        self.current_screen = self.menu
+
+    def process_events(self):
+        
+        for event in pygame.event.get():
+
+            if event.type == pygame.QUIT:
+                self.running = False
+
+            elif event.type == pygame.VIDEORESIZE:
+
+                self.width = event.w
+                self.height = event.h 
+
+                self.game_window = pygame.display.set_mode((self.width, self.height), pygame.RESIZABLE)
+
+                self.current_screen.screen_width = self.width
+                self.current_screen.screen_height = self.height
+                self.current_screen.update_layout()
+
+            action = self.current_screen.handle_event(event)
+
+            if action == "Play":
+                print ("Start Game")
+
+            elif action == "Settings":
+                print ("Settings")
+
+            elif action == "Quit":
+                self.running = False
+
+    def update (self):
+        mouse_position = pygame.mouse.get_pos()
+        self.current_screen.update(mouse_position)
+
+    def draw (self):
+        self.game_window.fill(BKGD_RED)
+        self.current_screen.draw(self.game_window)
+
+    def render (self):
+        pygame.display.flip()
+        self.clock.tick(60)
+
 
 # ========================
 # INITIALIZATION
@@ -186,17 +244,9 @@ class Text():
 pygame.init()
 
 pygame.display.set_caption("Not Snake game")
-game_window = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.RESIZABLE) # screen size
 
 MAIN_FONT = pygame.Font(MAIN_FONT, MAIN_FONT_SIZE) 
 TITLE_FONT = pygame.Font(TITLE_FONT, TITLE_FONT_SIZE)
-clock = pygame.time.Clock() # sets frame rate
-
-# Menu 
-menu = Menu(SCREEN_WIDTH, SCREEN_HEIGHT, MAIN_FONT, BTN_RED, BTN_HOVER_RED)
-menu.create_buttons()
-menu.update_layout()
-
 
 
 #buttons
@@ -206,41 +256,16 @@ menu.update_layout()
 #  GAME LOOP 
 # ========================
 
-quit_game = False
-while not quit_game:
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            quit_game = True
-        elif event.type == pygame.VIDEORESIZE: # allows game window to resize
-            SCREEN_WIDTH, SCREEN_HEIGHT = event.w, event.h
-            game_window = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.RESIZABLE)
+game = Game()
 
-            menu.screen_height = SCREEN_HEIGHT
-            menu.screen_width = SCREEN_WIDTH
-            menu.update_layout()
-        
-        action = menu.handle_event(event)
+while game.running:
 
-        if action == "Play":
-            print("start game")
-        
-        elif action == "Settings":
-            print("Settings")
+    game.process_events()
 
-        elif action == "Quit":
-            quit_game = True
+    game.update()
 
-    
-        #menu.buttons[0].button_draw(game_window)
-        #menu.buttons[1].button_draw(game_window)
-        #menu.buttons[2].button_draw(game_window)
-        #play_button.button_draw(game_window, "Play")
-    mouse_position = pygame.mouse.get_pos()
-    menu.update(mouse_position)
+    game.draw()
 
-    game_window.fill(BKGD_RED) # draws background colour in an hidden buffer
-    menu.draw(game_window)          
+    game.render()
 
-    pygame.display.flip() # updates draw in the foreground 
-    clock.tick(60)
 pygame.quit()

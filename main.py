@@ -14,6 +14,7 @@ SCREEN_HEIGHT = 600
 BLACK = pygame.Color(0, 0, 0)
 UI_WHITE = pygame.Color(255, 255, 255)
 BTN_RED = pygame.Color (173, 19, 28)
+BTN_HOVER_RED = pygame.Color (210, 60, 40)
 BKGD_RED = pygame.Color (255, 117, 111)
 SNAKE_GREEN = pygame.Color (88, 122, 51)
 TILE_WHITE = pygame.Color (232, 232, 232)
@@ -43,21 +44,28 @@ class Button ():    # Button Class
 
     
 
-    def __init__(self, text, x, y, w, h, color, font, angle=0):
+    def __init__(self, text, x, y, w, h, normal_color, hover_color, font, angle=0):
         self.w = w
         self.h = h
-        self.color = color
+        self.normal_color = normal_color
+        self.hover_color = hover_color
         self.font = font
         self.text = text
         self.angle = angle # rotation angle
+        self.hovered = False
 
         self.surface = pygame.Surface((w, h), pygame.SRCALPHA) # creates the button surface
         self.rect = self.surface.get_rect(topleft = (x, y)) # creates the rectangle
 
     def button_draw (self, game_window):  # draws text unto button and rotates button
-        #self.surface.fill((0, 0, 0, 0))
+        self.surface.fill((0, 0, 0, 0))
+        if self.hovered:
+            button_color = self.hover_color
 
-        pygame.draw.rect(self.surface, self.color, (0, 0, self.w, self.h), border_radius = 15)
+        else:
+            button_color = self.normal_color
+
+        pygame.draw.rect(self.surface, button_color, (0, 0, self.w, self.h), border_radius = 15)
         button_text = self.font.render(self.text, True, UI_WHITE)
         button_text_rect = button_text.get_rect(center = (self.w // 2, self.h // 2))
         self.surface.blit(button_text, button_text_rect)
@@ -66,18 +74,24 @@ class Button ():    # Button Class
         rotated_rect = rotated_surface.get_rect(center = (self.rect.center))
         game_window.blit(rotated_surface, rotated_rect)
 
+
+            
+
     def update(self, mouse_position):
         if self.rect.collidepoint(mouse_position):
             self.hovered = True
+
         else:
             self.hovered = False
 
+
 class Menu():   # Menu Class
-    def __init__(self, screen_width, screen_height, font, color):
+    def __init__(self, screen_width, screen_height, font, normal_color, hover_color):
         self.screen_width = screen_width  # why do we need to pass this if we don't need to pass angle
         self.screen_height = screen_height
         self.font = font
-        self.color = color
+        self.normal_color = normal_color
+        self.hover_color = hover_color
         self.buttons = []
         self.angle = MENU_ANGLE
         self.title = [
@@ -86,9 +100,9 @@ class Menu():   # Menu Class
         ]
 
     def create_buttons(self):  # Make the buttons
-        play_button = Button("Play", 0, 0, 300, 100, self.color, self.font, self.angle)
-        setting_button = Button("Settings", 0, 0, 300, 100, self.color, self.font, self.angle)
-        quit_button = Button("Quit", 0, 0, 300, 100, self.color, self.font, self.angle)
+        play_button = Button("Play", 0, 0, 300, 100, self.normal_color, self.hover_color, self.font, self.angle)
+        setting_button = Button("Settings", 0, 0, 300, 100, self.normal_color, self.hover_color, self.font, self.angle)
+        quit_button = Button("Quit", 0, 0, 300, 100, self.normal_color, self.hover_color, self.font,  self.angle)
         self.buttons.extend([play_button, setting_button, quit_button])
 
     def update_layout(self): 
@@ -106,8 +120,8 @@ class Menu():   # Menu Class
             button.w = button_width
             button.h = button_height
 
-            button.x = x
-            button.y = y
+            #button.x = x
+            #button.y = y
 
             button.surface = pygame.Surface((button.w, button.h), pygame.SRCALPHA)
             button.rect = button.surface.get_rect(center=(x + button.w / 2, y + button.h / 2))
@@ -123,13 +137,16 @@ class Menu():   # Menu Class
     def draw(self, game_window):
         for button in self.buttons:
             button.button_draw(game_window)
-            #button.update(mouse_position)
         
         for text in self.title:
             text.text_draw(game_window)
 
         pygame.draw.line(game_window, BLACK, (self.title[0].rect.left, self.title[0].rect.centery),
                          (self.title[0].rect.right, self.title[0].rect.centery), 5)
+        
+    def update(self, mouse_position):
+        for button in self.buttons:
+            button.update(mouse_position)
 
 class Text():
     def __init__(self, text, color, font, x, y):
@@ -162,9 +179,11 @@ TITLE_FONT = pygame.Font(TITLE_FONT, TITLE_FONT_SIZE)
 clock = pygame.time.Clock() # sets frame rate
 
 # Menu 
-menu = Menu(SCREEN_WIDTH, SCREEN_HEIGHT, MAIN_FONT, BTN_RED)
+menu = Menu(SCREEN_WIDTH, SCREEN_HEIGHT, MAIN_FONT, BTN_RED, BTN_HOVER_RED)
 menu.create_buttons()
 menu.update_layout()
+
+
 
 #buttons
 #play_button = Button(-50, 50, 300, 100, BTN_RED, MAIN_FONT, angle= MENU_ANGLE)
@@ -191,7 +210,10 @@ while not quit_game:
         #menu.buttons[1].button_draw(game_window)
         #menu.buttons[2].button_draw(game_window)
         #play_button.button_draw(game_window, "Play")
+    mouse_position = pygame.mouse.get_pos()
+    menu.update(mouse_position)
     menu.draw(game_window)
+
             
 
     pygame.display.flip() # updates draw in the foreground 

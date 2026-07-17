@@ -91,8 +91,20 @@ class Button ():    # Button Class
             
         return False
 
+class Screen:
+    def update(self):
+        pass
 
-class Menu():   # Menu Class
+    def draw(self, game_window):
+        pass
+
+    def handle_event(self, event):
+        pass
+
+    def update_layout(self):
+        pass
+
+class Menu(Screen):   # Menu Class
     def __init__(self, screen_width, screen_height, font, normal_color, hover_color):
         self.screen_width = screen_width  # why do we need to pass this if we don't need to pass angle
         self.screen_height = screen_height
@@ -112,7 +124,11 @@ class Menu():   # Menu Class
         quit_button = Button("Quit", 0, 0, 300, 100, self.normal_color, self.hover_color, self.font,  self.angle)
         self.buttons.extend([play_button, setting_button, quit_button])
 
-    def update_layout(self): 
+    def update_layout(self, width, height):
+
+        self.screen_width = width
+        self.screen_height = height
+
         button_height = self.screen_height * 0.3
         button_width =  self.screen_width * 0.45
 
@@ -151,7 +167,9 @@ class Menu():   # Menu Class
         pygame.draw.line(game_window, BLACK, (self.title[0].rect.left, self.title[0].rect.centery),
                          (self.title[0].rect.right, self.title[0].rect.centery), 5)
         
-    def update(self, mouse_position):
+    def update(self):
+        mouse_position = pygame.mouse.get_pos()
+
         for button in self.buttons:
             button.update(mouse_position)
 
@@ -176,6 +194,62 @@ class Text():
     def text_draw(self, game_window):
         game_window.blit(self.surface, self.rect)
 
+class SnakeGame(Screen):
+
+    def __init__(self, screen_width, screen_height):
+        self.screen_width = screen_width
+        self.screen_height = screen_height
+
+        self.board = Board(screen_width, screen_height)
+
+    def update(self):
+        pass
+
+    def draw(self, game_window):
+        self.board.draw(game_window)
+
+    def handle_event(self, event):
+        pass
+
+    def update_layout(self, width, height):
+        
+        self.board.screen_width = width
+        self.board.screen_height = height
+
+        self.board.update_layout()
+
+class Board:
+
+    def __init__(self, screen_width, screen_height):
+
+        self.screen_width = screen_width
+        self.screen_height = screen_height
+
+        self.width = 400
+        self.height = 400
+
+        self.color = UI_WHITE
+
+        self.rect = pygame.Rect(0, 0, self.width, self.height)
+
+        self.update_layout()
+
+    def update_layout(self):
+
+        board_size = min(self.screen_width, self.screen_height) * 0.9
+
+        self.width = board_size
+        self.height = board_size
+
+        self.rect.width = self.width
+        self.rect.height = self.height
+
+        self.rect.center = (self.screen_width // 2, self.screen_height // 2)
+
+
+    def draw (self, game_window):
+        pygame.draw.rect(game_window, UI_WHITE, self.rect)
+        
 
 class Game:
     def __init__(self):
@@ -191,7 +265,9 @@ class Game:
         self.menu = Menu(self.width, self.height, MAIN_FONT, BTN_RED, BTN_HOVER_RED)
 
         self.menu.create_buttons()
-        self.menu.update_layout()
+        self.menu.update_layout(self.width, self.height)
+
+        self.snake_game = SnakeGame(self.width, self.height)
 
         self.current_screen = self.menu
 
@@ -209,14 +285,12 @@ class Game:
 
                 self.game_window = pygame.display.set_mode((self.width, self.height), pygame.RESIZABLE)
 
-                self.current_screen.screen_width = self.width
-                self.current_screen.screen_height = self.height
-                self.current_screen.update_layout()
+                self.current_screen.update_layout(self.width, self.height)
 
             action = self.current_screen.handle_event(event)
 
             if action == "Play":
-                print ("Start Game")
+                self.current_screen = self.snake_game
 
             elif action == "Settings":
                 print ("Settings")
@@ -225,8 +299,7 @@ class Game:
                 self.running = False
 
     def update (self):
-        mouse_position = pygame.mouse.get_pos()
-        self.current_screen.update(mouse_position)
+        self.current_screen.update()
 
     def draw (self):
         self.game_window.fill(BKGD_RED)
@@ -237,6 +310,7 @@ class Game:
         self.clock.tick(60)
 
 
+
 # ========================
 # INITIALIZATION
 # ========================
@@ -245,8 +319,8 @@ pygame.init()
 
 pygame.display.set_caption("Not Snake game")
 
-MAIN_FONT = pygame.Font(MAIN_FONT, MAIN_FONT_SIZE) 
-TITLE_FONT = pygame.Font(TITLE_FONT, TITLE_FONT_SIZE)
+MAIN_FONT = pygame.font.Font(MAIN_FONT, MAIN_FONT_SIZE) 
+TITLE_FONT = pygame.font.Font(TITLE_FONT, TITLE_FONT_SIZE)
 
 
 #buttons

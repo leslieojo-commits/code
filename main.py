@@ -101,7 +101,7 @@ class Screen:
     def handle_event(self, event):
         pass
 
-    def update_layout(self):
+    def update_layout(self, width, height):
         pass
 
 class Menu(Screen):   # Menu Class
@@ -213,10 +213,10 @@ class SnakeGame(Screen):
 
     def update_layout(self, width, height):
         
-        self.board.screen_width = width
-        self.board.screen_height = height
+        self.screen_width = width
+        self.screen_height = height
 
-        self.board.update_layout()
+        self.board.update_layout(width, height)
 
 class Board:
 
@@ -232,19 +232,25 @@ class Board:
 
         self.rect = pygame.Rect(0, 0, self.width, self.height)
 
-        self.update_layout()
+        self.update_layout(screen_width, screen_height)
 
-    def update_layout(self):
+    def update_layout(self, width, height):
 
-        board_size = min(self.screen_width, self.screen_height) * 0.9
+        self.screen_width = width
+        self.screen_height = height
 
-        self.width = board_size
-        self.height = board_size
+        #board_size = min(width, height) * 0.9
 
-        self.rect.width = self.width
-        self.rect.height = self.height
+        board_size_width = self.screen_width * 0.8
+        board_size_height = self.screen_height * 0.8
 
-        self.rect.center = (self.screen_width // 2, self.screen_height // 2)
+        # --- delete self.width = board_size
+        # --- delete self.height = board_size
+
+        self.rect.width = board_size_width
+        self.rect.height = board_size_height
+
+        self.rect.center = (width // 2, height // 2)
 
 
     def draw (self, game_window):
@@ -285,7 +291,8 @@ class Game:
 
                 self.game_window = pygame.display.set_mode((self.width, self.height), pygame.RESIZABLE)
 
-                self.current_screen.update_layout(self.width, self.height)
+                self.menu.update_layout(self.width, self.height)
+                self.snake_game.update_layout(self.width, self.height)
 
             action = self.current_screen.handle_event(event)
 

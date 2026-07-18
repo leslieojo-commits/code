@@ -18,6 +18,7 @@ BTN_HOVER_RED = pygame.Color (210, 60, 40)
 BKGD_RED = pygame.Color (255, 117, 111)
 SNAKE_GREEN = pygame.Color (88, 122, 51)
 TILE_WHITE = pygame.Color (232, 232, 232)
+TILE_RED = pygame.Color (173, 19, 28)
 
 # Fonts
 FONT_FOLDER = "fonts"
@@ -225,12 +226,14 @@ class Board:
         self.screen_width = screen_width
         self.screen_height = screen_height
 
-        self.width = 400
-        self.height = 400
+        self.columns = 30
+        self.rows = 18
 
-        self.color = UI_WHITE
+        # self.color = None
 
-        self.rect = pygame.Rect(0, 0, self.width, self.height)
+        #self.color = UI_WHITE  -- Color doesn't come from the board it comes from the conditional logic
+
+        self.rect = pygame.Rect(0, 0, 0, 0)
 
         self.update_layout(screen_width, screen_height)
 
@@ -239,22 +242,47 @@ class Board:
         self.screen_width = width
         self.screen_height = height
 
-        #board_size = min(width, height) * 0.9
+        available_width = width * 0.90
+        available_height = height * 0.82
 
-        board_size_width = self.screen_width * 0.8
-        board_size_height = self.screen_height * 0.8
+        cell_width = available_width // self.columns
+        cell_height = available_height // self.rows
 
-        # --- delete self.width = board_size
-        # --- delete self.height = board_size
+        self.cell_size = min(cell_width, cell_height)
 
-        self.rect.width = board_size_width
-        self.rect.height = board_size_height
+        board_width = self.columns * self.cell_size
+        board_height = self.rows * self.cell_size
 
-        self.rect.center = (width // 2, height // 2)
+        self.rect.width = board_width
+        self.rect.height = board_height
 
+        self.rect.centerx = width // 2
 
-    def draw (self, game_window):
-        pygame.draw.rect(game_window, UI_WHITE, self.rect)
+        margin = 20
+
+        top_bar = height * 0.12
+
+        self.rect.top = top_bar + margin
+
+    
+
+    def draw (self, game_window): # nested loop to draw the board tiles
+        for row in range(self.rows):
+
+            for column in range(self.columns):
+
+                x = self.rect.left + column * self.cell_size
+
+                y = self.rect.top + row * self.cell_size
+
+                tile  = pygame.Rect(x, y, self.cell_size, self.cell_size)
+
+                if (row + column) % 2 == 0:
+                    color = TILE_WHITE
+                else:
+                    color = TILE_RED
+
+                pygame.draw.rect(game_window, color, tile)
         
 
 class Game:

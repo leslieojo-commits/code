@@ -202,12 +202,14 @@ class SnakeGame(Screen):
         self.screen_height = screen_height
 
         self.board = Board(screen_width, screen_height)
+        self.snake = Snake()
 
     def update(self):
         pass
 
     def draw(self, game_window):
         self.board.draw(game_window)
+        self.snake.draw(game_window, self.board)
 
     def handle_event(self, event):
         pass
@@ -283,6 +285,37 @@ class Board:
                     color = TILE_RED
 
                 pygame.draw.rect(game_window, color, tile)
+
+    def get_tile_rect (self, column, row): # Return (columns, rows) into coordinates when called
+
+        x = self.rect.left + column * self.cell_size
+        y = self.rect.top + row * self.cell_size
+
+        return pygame.Rect(x, y, self.cell_size, self.cell_size)
+        
+
+
+class Snake:
+    def __init__(self):
+        self.body = [ (5,7), (4,7), (3,7) ]
+        self.direction =  (1,0) 
+        self.color = SNAKE_GREEN
+
+    def draw(self, game_window, board):
+        for column, row in self.body:
+
+            tile = board.get_tile_rect(column, row)
+            pygame.draw.rect(game_window, self.color, tile)
+
+    def move(self):
+        head_column, head_row = self.body[0]
+        direction_column, direction_row = self.direction
+
+        new_head = (head_column + direction_column, head_row + direction_row)
+        self.body.insert(0, new_head)
+        self.body.pop()
+
+        
         
 
 class Game:

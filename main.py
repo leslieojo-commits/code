@@ -45,7 +45,7 @@ class Button ():    # Button Class
 
     
 
-    def __init__(self, text, x, y, w, h, normal_color, hover_color, font, angle=0):
+    def __init__(self, text, x, y, w, h, normal_color, hover_color, font, angle=0): # Initializes the Button attributes
         self.w = w
         self.h = h
         self.normal_color = normal_color
@@ -58,7 +58,7 @@ class Button ():    # Button Class
         self.surface = pygame.Surface((w, h), pygame.SRCALPHA) # creates the button surface
         self.rect = self.surface.get_rect(topleft = (x, y)) # creates the rectangle
 
-    def button_draw (self, game_window):  # draws text unto button and rotates button
+    def button_draw (self, game_window):  # Clears the surface then draws rotated button
         self.surface.fill((0, 0, 0, 0))
         if self.hovered:
             button_color = self.hover_color

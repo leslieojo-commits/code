@@ -307,6 +307,18 @@ class Snake:
             tile = board.get_tile_rect(column, row)
             pygame.draw.rect(game_window, self.color, tile)
 
+    ''' def handle_keys(self):
+        keys = pygame.key.get_just_released
+
+        if keys[pygame.K_LEFT] & self.direction != (1,0):
+            self.direction = (-1, 0)
+        elif keys[pygame.K_RIGHT] & self.direction != (-1,0):
+            self.direction = (1,0)
+        elif keys[pygame.K_UP] & self.direction != (1,0):
+            self.direction = (0,1)
+        elif keys[pygame.K_DOWN] & self.direction != (0,1):
+            self.direction = (0,-1) '''
+
     def move(self):
         head_column, head_row = self.body[0]
         direction_column, direction_row = self.direction
@@ -314,6 +326,7 @@ class Snake:
         new_head = (head_column + direction_column, head_row + direction_row)
         self.body.insert(0, new_head)
         self.body.pop()
+
 
         
         

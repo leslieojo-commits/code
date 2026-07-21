@@ -53,13 +53,16 @@ class Button ():    # Button Class
         self.font = font
         self.text = text
         self.angle = angle # rotation angle
+        
         self.hovered = False
 
         self.surface = pygame.Surface((w, h), pygame.SRCALPHA) # creates the button surface
         self.rect = self.surface.get_rect(topleft = (x, y)) # creates the rectangle
 
     def button_draw (self, game_window):  # Clears the surface then draws rotated button
-        self.surface.fill((0, 0, 0, 0))
+
+        self.surface.fill((0, 0, 0, 0)) # Clears the surface before drawing, for future purposes like adding animation etc.
+
         if self.hovered:
             button_color = self.hover_color
 

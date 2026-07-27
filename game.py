@@ -142,7 +142,7 @@ class Menu(Screen):
     normal_color: The current color when button is not hovered.
     hover_color: The display colour when button is hovered.
     angle: The angle the button will be rotated by.
-    title: The menu title (text) that will be displayed on the screen.
+    title: The menu title (text) that will be displayed on the screen (derived from the Text Class).
 
     """
 
@@ -206,25 +206,34 @@ class Menu(Screen):
         spacing = 45
 
         self.title[0].text_set_position(title_x, title_y)  # Draws Title at given x position
-        self.title[1].text_set_position(title_x - spacing, title_y + self.title[0].rect.height - spacing )
+        self.title[1].text_set_position(title_x - spacing, title_y + self.title[0].rect.height - spacing )  
 
     def draw(self, game_window):
+
+        """ Loops through defined list and executes a draw function. """
+
         for button in self.buttons:
             button.button_draw(game_window)
         
         for text in self.title:
-            text.text_draw(game_window)
+            text.draw(game_window)
 
         pygame.draw.line(game_window, BLACK, (self.title[0].rect.left, self.title[0].rect.centery),
                          (self.title[0].rect.right, self.title[0].rect.centery), 5)
         
     def update(self):
+
+        """ Stores mouse coordinates in a variable and passes it to button. """
+
         mouse_position = pygame.mouse.get_pos()
 
         for button in self.buttons:
             button.update(mouse_position)
 
     def handle_event(self, event):
+
+        """ Handles the response the button passes when it is clicked. """
+
         for button in self.buttons:
              if button.handle_event(event):
                  return button.text
@@ -232,7 +241,13 @@ class Menu(Screen):
         return None
 
 class Text():
+
+    """ Controls the attributes of the Menu Text. """
+
     def __init__(self, text, color, font, x, y):
+
+        """ Initializes the Menu text with the required parameters. """
+
         self.text = text
         self.color = color
         self.font = font
@@ -240,12 +255,20 @@ class Text():
         self.rect = self.surface.get_rect(center = (x, y))
 
     def text_set_position(self, x, y):
+
+        """ Sets Menu text position using rect. """
+
         self.rect.center = (x, y)
         
-    def text_draw(self, game_window):
+    def draw(self, game_window):
+
+        """ Draws the Menu Text. """
+
         game_window.blit(self.surface, self.rect)
 
 class SnakeGame(Screen):
+
+    """  """
 
     def __init__(self, screen_width, screen_height):
         self.screen_width = screen_width

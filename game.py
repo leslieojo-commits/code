@@ -1,4 +1,7 @@
-# import libraries
+# ========================
+# IMPORT LIBRARIES
+# ========================
+
 import pygame
 import time
 import random
@@ -41,7 +44,10 @@ TITLE_FONT = pygame.font.Font(TITLE_FONT_PATH, TITLE_FONT_SIZE)
 # CLASSES
 # =======================
 
-class Button ():    # Button Class
+class Button ():
+
+    """ Controls the button drawing, hovering states and mouse detection """
+
     #NORMAL_ANGLE = 0
     #MAIN_MENU_ANGLE = 15 
 
@@ -51,25 +57,30 @@ class Button ():    # Button Class
 
     
 
-    def __init__(self, text, x, y, w, h, normal_color, hover_color, font, angle=0): # Initializes the Button attributes
+    def __init__(self, text, x, y, w, h, normal_color, hover_color, font, angle=0): 
+
+        """ Initializes a button with with a given text, color, font, and default angle initially set to zero. """
+
         self.w = w
         self.h = h
         self.normal_color = normal_color
         self.hover_color = hover_color
         self.font = font
         self.text = text
-        self.angle = angle # rotation angle
+        self.angle = angle  # rotation angle
         
         self.hovered = False
 
-        self.surface = pygame.Surface((w, h), pygame.SRCALPHA) # creates the button surface
-        self.rect = self.surface.get_rect(topleft = (x, y)) # creates the rectangle
+        self.surface = pygame.Surface((w, h), pygame.SRCALPHA)  
+        self.rect = self.surface.get_rect(topleft = (x, y))  # creates the rectangle
 
-    def button_draw (self, game_window):  # Clears the surface then draws rotated button
+    def button_draw (self, game_window):  
 
-        self.surface.fill((0, 0, 0, 0)) # Clears the surface before drawing, for future purposes like adding animation etc.
+        """ Draws a rotated button that detects when it is hovered or not. """
 
-        if self.hovered:
+        self.surface.fill((0, 0, 0, 0))  # Clears surface before drawing, for future purposes like adding animation etc.
+
+        if self.hovered:  # Hover State
             button_color = self.hover_color
 
         else:
@@ -82,41 +93,64 @@ class Button ():    # Button Class
 
         rotated_surface = pygame.transform.rotate(self.surface, self.angle)
         rotated_rect = rotated_surface.get_rect(center = (self.rect.center))
-        game_window.blit(rotated_surface, rotated_rect)
+        game_window.blit(rotated_surface, rotated_rect)   
 
+    def update(self, mouse_position):  
 
-            
+        """ Detects whether button is hovered over or not. """
 
-    def update(self, mouse_position):
         if self.rect.collidepoint(mouse_position):
             self.hovered = True
 
         else:
             self.hovered = False
 
-    def handle_event(self, event):
+    def handle_event(self, event): 
+
+        """ Detects when button is clicked """
+
         if event.type == pygame.MOUSEBUTTONDOWN:
             if self.rect.collidepoint(event.pos):
                 return True
             
         return False
 
-class Screen:
+class Screen: 
+
+    """ Allows Children classes inherit the current methods or override them. """
+
     def update(self):
         pass
 
-    def draw(self, game_window):
+    def draw(self, game_window): # Drawing game screen
         pass
 
-    def handle_event(self, event):
+    def handle_event(self, event): # Handling click, detection and logic
         pass
 
-    def update_layout(self, width, height):
+    def update_layout(self, width, height): # Layout Arrangement 
         pass
 
-class Menu(Screen):   # Menu Class
+class Menu(Screen):  
+
+    """ Controls button behaviour in the Menu.
+     
+    Attributes:
+    screen_width (float): The current screen width at the moment (depends on resizing).
+    scree_height (float): The current screen height.
+    font: The font in use.
+    normal_color: The current color when button is not hovered.
+    hover_color: The display colour when button is hovered.
+    angle: The angle the button will be rotated by.
+    title: The menu title (text) that will be displayed on the screen.
+
+    """
+
     def __init__(self, screen_width, screen_height, font, normal_color, hover_color):
-        self.screen_width = screen_width  # why do we need to pass this if we don't need to pass angle
+
+        """ Initializes the Menu with the necessary attributes required. """
+
+        self.screen_width = screen_width  
         self.screen_height = screen_height
         self.font = font
         self.normal_color = normal_color
@@ -128,13 +162,18 @@ class Menu(Screen):   # Menu Class
             Text("Snake", BLACK, TITLE_FONT, 0, 0)
         ]
 
-    def create_buttons(self):  # Make the buttons
+    def create_buttons(self): 
+
+        """ Creates the Menu Buttons. """
+
         play_button = Button("Play", 0, 0, 300, 100, self.normal_color, self.hover_color, self.font, self.angle)
         setting_button = Button("Settings", 0, 0, 300, 100, self.normal_color, self.hover_color, self.font, self.angle)
         quit_button = Button("Quit", 0, 0, 300, 100, self.normal_color, self.hover_color, self.font,  self.angle)
         self.buttons.extend([play_button, setting_button, quit_button])
 
     def update_layout(self, width, height):
+
+        """ Creates the layout arrangement for Menu Buttons. """
 
         self.screen_width = width
         self.screen_height = height
@@ -149,7 +188,7 @@ class Menu(Screen):   # Menu Class
         x = -50
         y = 0
 
-        for button in self.buttons:
+        for button in self.buttons:  # Loop to iterate and arange all the buttons in the list
             button.w = button_width
             button.h = button_height
 
@@ -161,10 +200,12 @@ class Menu(Screen):   # Menu Class
 
             y += button_height + space
 
-        title_x = self.screen_width * 0.85
+        title_x = self.screen_width * 0.85  # Logic for creating Menu Title
         title_y = self.screen_height * 0.80
+
         spacing = 45
-        self.title[0].text_set_position(title_x, title_y)
+
+        self.title[0].text_set_position(title_x, title_y)  # Draws Title at given x position
         self.title[1].text_set_position(title_x - spacing, title_y + self.title[0].rect.height - spacing )
 
     def draw(self, game_window):

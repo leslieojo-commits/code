@@ -92,7 +92,7 @@ class Button ():
         self.surface.blit(button_text, button_text_rect)
 
         rotated_surface = pygame.transform.rotate(self.surface, self.angle)
-        rotated_rect = rotated_surface.get_rect(center = (self.rect.center))
+        rotated_rect = rotated_surface.get_rect(center = (self.rect.center))  # gets rectangle of rotated surface to avoid jumping
         game_window.blit(rotated_surface, rotated_rect)   
 
     def update(self, mouse_position):  

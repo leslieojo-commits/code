@@ -33,5 +33,6 @@ def test_button_hover():
     # Passes mouse position to update method to check collision.
     button.update(mouse_position)
 
+    #  Verifies if butt
     assert button.hovered is True
 

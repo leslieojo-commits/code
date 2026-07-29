@@ -278,14 +278,26 @@ class SnakeGame(Screen):
         self.snake = Snake()
 
     def update(self):
-        pass
+        # move the snake
+        self.snake.move()
 
     def draw(self, game_window):
+        """ draw all entities in the game"""
         self.board.draw(game_window)
         self.snake.draw(game_window, self.board)
 
     def handle_event(self, event):
-        pass
+        keys = pygame.key.get_just_released()
+
+        if keys[pygame.K_LEFT] :
+            self.snake.direction = Snake.MOVE_LEFT
+        elif keys[pygame.K_RIGHT]:
+           self.snake.direction = Snake.MOVE_RIGHT
+        elif keys[pygame.K_UP]:
+            self.snake.direction = Snake.MOVE_UP
+        elif keys[pygame.K_DOWN]:
+            self.snake.direction = Snake.MOVE_DOWN
+        
 
     def update_layout(self, width, height):
         
@@ -369,37 +381,69 @@ class Board:
 
 
 class Snake:
+    # directional constants - rotational so we can check opposites easily
+    MOVE_UP = 0
+    MOVE_RIGHT = 1
+    MOVE_DOWN = 2
+    MOVE_LEFT = 3
+    MOVE_VECTORS = [ (0,-1), (1,0), (0,1), (-1,0)]
+    SEG_HEAD = 0
     def __init__(self):
         self.body = [ (5,7), (4,7), (3,7) ]
-        self.direction =  (1,0) 
-        self.color = SNAKE_GREEN
+        self._direction = self.MOVE_LEFT
+        self._direction_vector = self.MOVE_VECTORS[self._direction]
+        self._color = SNAKE_GREEN
+        self._growing = False
+        self._move_delay = 1 # snake defaults to 1 second - fix this to be defined by the GAME
+        self._next_move = time.time() + self._move_delay
 
     def draw(self, game_window, board):
         for column, row in self.body:
 
             tile = board.get_tile_rect(column, row)
-            pygame.draw.rect(game_window, self.color, tile)
-
-    ''' def handle_keys(self):
-        keys = pygame.key.get_just_released
-
-        if keys[pygame.K_LEFT] & self.direction != (1,0):
-            self.direction = (-1, 0)
-        elif keys[pygame.K_RIGHT] & self.direction != (-1,0):
-            self.direction = (1,0)
-        elif keys[pygame.K_UP] & self.direction != (1,0):
-            self.direction = (0,1)
-        elif keys[pygame.K_DOWN] & self.direction != (0,1):
-            self.direction = (0,-1) '''
+            pygame.draw.rect(game_window, self._color, tile)
 
     def move(self):
-        head_column, head_row = self.body[0]
-        direction_column, direction_row = self.direction
+        if time.time() > self._next_move:
+            head_column, head_row = self.body[0]
+            direction_column, direction_row = self._direction_vector
 
-        new_head = (head_column + direction_column, head_row + direction_row)
-        self.body.insert(0, new_head)
-        self.body.pop()
+            new_head = (head_column + direction_column, head_row + direction_row)
+            self.body.insert(0, new_head)
+            if not self._growing:
+                self.body.pop()
 
+            # set next move time
+            self._next_move = time.time() + self._move_delay
+
+    def get_direction(self):
+        """ return the current direction """
+        return self._direction
+    def set_direction(self, dir):
+        """ set the current direction"""
+        # is it a valid direction
+        if dir in [0,1,2,3]:
+            # check if reversing with a mod operation
+            if not dir + 2 % 4 == self._direction: # Thsi is a correct solution but i can use it for now to do invalid code and stuff if not (dir + 2) % 4 != self._direction
+                # set the direction and the vector
+                self._direction = dir
+                self._direction_vector = self.MOVE_VECTORS[self._direction]
+    # property declaration for convenience
+    direction = property(get_direction, set_direction)
+
+    # property functions for internal "_growing" status
+    def get_growing(self):
+        return self._growing
+    def set_growing(self, grow):
+        # check for boolean type  
+        if type(grow).__name__ == "bool":
+            self._growing = grow
+    growing = property( get_growing, set_growing )
+
+    # Property Function to return snake positon
+    def get_position(self):
+        return self.body[self.SEG_HEAD]
+    position = property(get_position)
 
         
         
@@ -425,12 +469,14 @@ class Game:
         self.current_screen = self.menu
 
     def process_events(self):
-        
-        for event in pygame.event.get():
+        """ main event processing loop"""
 
+        # procdess event list
+        for event in pygame.event.get():
+            # quitting?
             if event.type == pygame.QUIT:
                 self.running = False
-
+            # window resize
             elif event.type == pygame.VIDEORESIZE:
 
                 self.width = event.w
@@ -441,8 +487,9 @@ class Game:
                 self.menu.update_layout(self.width, self.height)
                 self.snake_game.update_layout(self.width, self.height)
 
+            #
             action = self.current_screen.handle_event(event)
-
+            # button click
             if action == "Play":
                 self.current_screen = self.snake_game
 

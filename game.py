@@ -245,22 +245,20 @@ class Text():
         self.rect = self.surface.get_rect(center = (x, y))
 
     def text_set_position(self, x, y):
-
         """ Sets Menu text position using rect. """
 
         self.rect.center = (x, y)
         
     def draw(self, game_window):
-
         """ Draws the Menu Text. """
 
         game_window.blit(self.surface, self.rect)
 
 class SnakeGame(Screen):
-
-    """  """
+    """ Controls Snake Screen Properties  """
 
     def __init__(self, screen_width, screen_height):
+        """ Initializes screen width & height and initializes game board and snake. """
         self.screen_width = screen_width
         self.screen_height = screen_height
 
@@ -268,15 +266,21 @@ class SnakeGame(Screen):
         self.snake = Snake()
 
     def update(self):
+        """ Calls a method that updates entities on the Screen. """
+
         # move the snake
         self.snake.move()
 
     def draw(self, game_window):
-        """ draw all entities in the game"""
+        """ draw all entities in the game. """
+
         self.board.draw(game_window)
         self.snake.draw(game_window, self.board)
 
     def handle_event(self, event):
+        """ Responsible for responding to events being triggerd. """
+
+        #  Determines the exact moment a key transitions from pressed to released
         keys = pygame.key.get_just_released()
 
         if keys[pygame.K_LEFT] :
@@ -290,70 +294,87 @@ class SnakeGame(Screen):
         
 
     def update_layout(self, width, height):
-        
+        """ Receives current layout properties from Game Class and updates its entities. """
+
+        #  Receives Screen Width & Height Properties
         self.screen_width = width
         self.screen_height = height
 
+        #  Passes Current Screen Width & Height to the Board
         self.board.update_layout(width, height)
 
 class Board:
-
+    """ Creates the Game Board """
     def __init__(self, screen_width, screen_height):
 
+        #  Initializes screen width & screen height 
         self.screen_width = screen_width
         self.screen_height = screen_height
 
+        #  Defines Number of board rows and columns
         self.columns = 30
         self.rows = 18
 
-        # self.color = None
-
-        #self.color = UI_WHITE  -- Color doesn't come from the board it comes from the conditional logic
-
         self.rect = pygame.Rect(0, 0, 0, 0)
 
+        #  Calls update_layout method to process screen width and height
         self.update_layout(screen_width, screen_height)
 
     def update_layout(self, width, height):
+        """ Responsible for handling board layout and receiving updated screen sizes. """
 
+        #  Initializes Current Screen Width and Height
         self.screen_width = width
         self.screen_height = height
 
+        #  Defines Permissible space available for Board to be drawn 
         available_width = width * 0.90
         available_height = height * 0.82
 
+        # Calculation for individual cell width & height
         cell_width = available_width // self.columns
         cell_height = available_height // self.rows
 
+        #  Ensures cell is always a square 
         self.cell_size = min(cell_width, cell_height)
 
+        #  Defines board width & heigt
         board_width = self.columns * self.cell_size
         board_height = self.rows * self.cell_size
 
+        #  Defines rectangle for board width & height
         self.rect.width = board_width
         self.rect.height = board_height
 
+        #  Gets Center of Rect.
         self.rect.centerx = width // 2
 
+        #  Defines top spacing 
         margin = 20
-
         top_bar = height * 0.12
 
+        # Creates a margin with a rect at the top for score counting 
         self.rect.top = top_bar + margin
 
     
 
-    def draw (self, game_window): # nested loop to draw the board tiles
+    def draw (self, game_window): 
+        """ Draws the board tiles (cells). """
+
+        # Nested loop to draw the board tiles
         for row in range(self.rows):
 
             for column in range(self.columns):
 
+                # Defines x-coordinates of each tile
                 x = self.rect.left + column * self.cell_size
 
+                # Defines y-coordinate of each tile
                 y = self.rect.top + row * self.cell_size
 
                 tile  = pygame.Rect(x, y, self.cell_size, self.cell_size)
 
+                # Conditional logic for grid color
                 if (row + column) % 2 == 0:
                     color = TILE_WHITE
                 else:
@@ -361,8 +382,8 @@ class Board:
 
                 pygame.draw.rect(game_window, color, tile)
 
-    def get_tile_rect (self, column, row): # Return (columns, rows) into coordinates when called
-
+    def get_tile_rect (self, column, row): 
+        """ Returns coordinate and cell size when called. """
         x = self.rect.left + column * self.cell_size
         y = self.rect.top + row * self.cell_size
 

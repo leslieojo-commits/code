@@ -19,17 +19,26 @@ UI_WHITE = pygame.Color(255, 255, 255)
 BTN_RED = pygame.Color (173, 19, 28)
 BTN_HOVER_RED = pygame.Color (210, 60, 40)
 BKGD_RED = pygame.Color (255, 117, 111)
-SNAKE_GREEN = pygame.Color (88, 122, 51)
+SNAKE_GREEN = pygame.Color (44, 80, 5)
 TILE_WHITE = pygame.Color (232, 232, 232)
-TILE_RED = pygame.Color (173, 19, 28)
+TILE_RED = pygame.Color (255, 218, 220)
+FOOD_COLOUR = pygame.Color (255, 223, 0)
 
-# Fonts
+
+#TILE_RED = pygame.Color (173, 19, 28)
+
+# Fonts (Menu)
 FONT_FOLDER = "fonts"
 MAIN_FONT_PATH = f"{FONT_FOLDER}\\Poppins-Medium.ttf"
 MAIN_FONT_SIZE = 40
 
+# Menu Title Font
 TITLE_FONT_PATH = f"{FONT_FOLDER}\\Poppins-Bold.ttf"
 TITLE_FONT_SIZE = 70
+
+# Score font
+SCORE_FONT_PATH = f"{FONT_FOLDER}\\Poppins-Bold.ttf"
+SCORE_FONT_SIZE = 20
 
 # Button Angle
 MENU_BTN_ANGLE = -5
@@ -42,6 +51,7 @@ pygame.init()
 
 MAIN_FONT = pygame.font.Font(MAIN_FONT_PATH, MAIN_FONT_SIZE) 
 TITLE_FONT = pygame.font.Font(TITLE_FONT_PATH, TITLE_FONT_SIZE)
+SCORE_FONT = pygame.font.Font(SCORE_FONT_PATH, SCORE_FONT_SIZE)
 
 
 # =======================
@@ -259,23 +269,81 @@ class SnakeGame(Screen):
 
     def __init__(self, screen_width, screen_height):
         """ Initializes screen width & height and initializes game board and snake. """
-        self.screen_width = screen_width
-        self.screen_height = screen_height
+        self._paused = False # Set Pause to False
 
-        self.board = Board(screen_width, screen_height)
+        self.board = None # board not created yet - workaround for update_layout
+
+        # set initial window parameters
+        self.update_layout(screen_width, screen_height)
+
+        # Set up the Snake Game & Board
+        self.board = Board(self._margin, self._margin + self._hs_bar_height, screen_width - self._margin * 2, screen_height - self._margin * 2)
+        self.reset_game ()
+
+    def reset_game(self):
+        """ Responsible for Snake Game & Board set up when called. """
         self.snake = Snake()
+        self.food  = Food(self.board, self.snake.body)
+        self._score = 0
 
     def update(self):
         """ Calls a method that updates entities on the Screen. """
+        if not self._paused:  # Only perform updates while the game is not paused
+            # move the snake
+            moved = self.snake.move(self.board)
 
-        # move the snake
-        self.snake.move()
+            if not moved:
+                return
+            
+            if self.snake.position == self.food.position:
+                self.snake.growing = True
+                self._score += 1
+                self.food.respawn(self.board, self.snake.body)
+
+            if self.snake.dying:
+                print ("TODO exit the snake game - BORK BORK BORK!!!")
+
+
+        
+        
+            #check_wall_collision()
+
+
+            #check_self_collision
+
 
     def draw(self, game_window):
         """ draw all entities in the game. """
 
         self.board.draw(game_window)
         self.snake.draw(game_window, self.board)
+        self.food.draw(game_window, self.board)
+        self.draw_hud(game_window)
+
+    def draw_hud(self,game_window):
+        """ Draws elements of the game display no top of the board """
+        score_surface = SCORE_FONT.render(f"Score: {self._score}", False, UI_WHITE)
+        score_surface_rect = score_surface.get_rect()
+        score_surface_rect.topleft = (self._margin, self._margin)
+        pygame.draw.rect(game_window, BTN_RED, pygame.Rect(0, 0, self._screen_width, self._hs_bar_height) )
+        game_window.blit(score_surface, score_surface_rect)
+
+        # if the snake is dying, pause the game
+        if self.snake.dying:
+            pause_message = "GAME OVER"
+            self._paused = True
+        else:
+            pause_message = "Paused: press any key"
+
+        # Draw the pause if we're paused
+        if self._paused:
+            pause_surface = SCORE_FONT.render(pause_message, True, UI_WHITE, BTN_RED )
+            pause_surface_rect = pause_surface.get_rect()
+            pause_surface_rect.center = (self._screen_width // 2, self._screen_height // 2)
+            game_window.blit(pause_surface, pause_surface_rect)
+
+        
+        
 
     def handle_event(self, event):
         """ Responsible for responding to events being triggerd. """
@@ -291,21 +359,40 @@ class SnakeGame(Screen):
             self.snake.direction = Snake.MOVE_UP
         elif keys[pygame.K_DOWN]:
             self.snake.direction = Snake.MOVE_DOWN
+
+        #  Handles event for pausing
+        if event.type == pygame.KEYDOWN:
+            if self._paused:
+                self._paused = False
+            elif event.key == pygame.K_PAUSE:
+                self._paused = True
+
+        #  Handles event for restart
+        if event.type == pygame.KEYDOWN:
+            # TODO need to ask user for restart
+            if event.key == pygame.K_ESCAPE:
+                # Restart the game
+                self.reset_game()
         
 
     def update_layout(self, width, height):
         """ Receives current layout properties from Game Class and updates its entities. """
 
         #  Receives Screen Width & Height Properties
-        self.screen_width = width
-        self.screen_height = height
+        self._screen_width = width
+        self._screen_height = height
+
+        #  Defines spacing for high score 
+        self._margin = 20
+        self._hs_bar_height = int(height * 0.12)
 
         #  Passes Current Screen Width & Height to the Board
-        self.board.update_layout(width, height)
+        if not self.board == None:
+            self.board.update_layout(self._margin, self._margin + self._hs_bar_height, width - (self._margin * 2), height - self._hs_bar_height - (self._margin * 2))
 
 class Board:
     """ Creates the Game Board """
-    def __init__(self, screen_width, screen_height):
+    def __init__(self, x, y, screen_width, screen_height):
 
         #  Initializes screen width & screen height 
         self.screen_width = screen_width
@@ -318,27 +405,20 @@ class Board:
         self.rect = pygame.Rect(0, 0, 0, 0)
 
         #  Calls update_layout method to process screen width and height
-        self.update_layout(screen_width, screen_height)
+        self.update_layout(x, y, screen_width, screen_height)
 
-    def update_layout(self, width, height):
+    def update_layout(self, x, y, width, height):
         """ Responsible for handling board layout and receiving updated screen sizes. """
 
-        #  Initializes Current Screen Width and Height
-        self.screen_width = width
-        self.screen_height = height
-
-        #  Defines Permissible space available for Board to be drawn 
-        available_width = width * 0.90
-        available_height = height * 0.82
 
         # Calculation for individual cell width & height
-        cell_width = available_width // self.columns
-        cell_height = available_height // self.rows
+        cell_width = width // self.columns
+        cell_height = height // self.rows
 
         #  Ensures cell is always a square 
         self.cell_size = min(cell_width, cell_height)
 
-        #  Defines board width & heigt
+        #  Defines board width & height
         board_width = self.columns * self.cell_size
         board_height = self.rows * self.cell_size
 
@@ -346,17 +426,11 @@ class Board:
         self.rect.width = board_width
         self.rect.height = board_height
 
-        #  Gets Center of Rect.
-        self.rect.centerx = width // 2
+        # set position
+        self.rect.x = x + ((width - board_width) // 2)
+        self.rect.y = y
 
-        #  Defines top spacing 
-        margin = 20
-        top_bar = height * 0.12
 
-        # Creates a margin with a rect at the top for score counting 
-        self.rect.top = top_bar + margin
-
-    
 
     def draw (self, game_window): 
         """ Draws the board tiles (cells). """
@@ -388,6 +462,15 @@ class Board:
         y = self.rect.top + row * self.cell_size
 
         return pygame.Rect(x, y, self.cell_size, self.cell_size)
+
+    def valid_tile(self, tile_pos):
+        column, row = tile_pos
+        """ Returns if the tile is inside the board. (used for snake death) """
+        if column < 0 or column >= self.columns or row < 0 or row >= self.rows:
+            return False
+        return True
+
+
         
 
 
@@ -401,32 +484,44 @@ class Snake:
     SEG_HEAD = 0
     def __init__(self):
         self.body = [ (5,7), (4,7), (3,7) ]
-        self._direction = self.MOVE_LEFT
+        self._direction = self.MOVE_RIGHT
         self._direction_vector = self.MOVE_VECTORS[self._direction]
         self._color = SNAKE_GREEN
         self._growing = False
-        self._move_delay = 1 # snake defaults to 1 second - fix this to be defined by the GAME
+        self._dying = False
+        self._move_delay = 0.5 # snake defaults to 1 second - fix this to be defined by the GAME
         self._next_move = time.time() + self._move_delay
+
 
     def draw(self, game_window, board):
         for column, row in self.body:
 
+            # Get the correct rectangle for this position in the board
             tile = board.get_tile_rect(column, row)
             pygame.draw.rect(game_window, self._color, tile)
 
-    def move(self):
+    def move(self, board):
         if time.time() > self._next_move:
             head_column, head_row = self.body[0]
             direction_column, direction_row = self._direction_vector
 
             new_head = (head_column + direction_column, head_row + direction_row)
             self.body.insert(0, new_head)
-            if not self._growing:
+            if self._growing:
+                # keep the tail for this movement, then stop growing 
+                self._growing = False
+            else:
                 self.body.pop()
 
             # set next move time
             self._next_move = time.time() + self._move_delay
-
+            if not board.valid_tile(self.body[0]):
+                self.dying = True
+                
+            return True
+        
+        return False
+        
     def get_direction(self):
         """ return the current direction """
         return self._direction
@@ -436,6 +531,7 @@ class Snake:
         if dir in [0,1,2,3]:
             # check if reversing with a mod operation
             if not dir + 2 % 4 == self._direction: # Thsi is a correct solution but i can use it for now to do invalid code and stuff if not (dir + 2) % 4 != self._direction
+            #if not (dir+ 2) % 4 != self._direction:   
                 # set the direction and the vector
                 self._direction = dir
                 self._direction_vector = self.MOVE_VECTORS[self._direction]
@@ -456,7 +552,46 @@ class Snake:
         return self.body[self.SEG_HEAD]
     position = property(get_position)
 
-        
+    # Property Functions to get and set snake dying 
+    def get_dying(self):
+        return self._dying 
+    def set_dying(self, die):
+    # check for boolean type  
+        if type(die).__name__ == "bool":
+            self._dying = die
+    dying = property( get_dying , set_dying )
+
+
+class Food:
+    """ Responsible for Food attributes. """
+
+    def __init__(self, board, snake_body):
+        """ Initializes the food parameters. """
+        #self.position = (column, row)
+        self.color = FOOD_COLOUR
+        self.respawn (board, snake_body)
+
+    def draw(self, game_window, board):
+        """ Draws Food. """
+        column, row = self.position
+        tile = board.get_tile_rect(column, row)
+        pygame.draw.rect (game_window, self.color, tile)
+        pygame.draw.rect (game_window, BLACK, tile, width = 1)
+
+    def respawn(self, board, snake_body):
+        """ Spawns food at random unnoccupied positions. """
+        column = random.randint(0, board.columns - 1)
+        row = random.randint(0, board.rows -1)
+        position = (column, row)
+
+        while position in snake_body:
+            column = random.randint(0, board.columns -1)
+            row = random.randint(0, board.rows - 1)
+            position = (column, row)
+
+        self.position = position
+    
+           
         
 
 class Game:
@@ -498,7 +633,7 @@ class Game:
                 self.menu.update_layout(self.width, self.height)
                 self.snake_game.update_layout(self.width, self.height)
 
-            #
+            # handle the current screen's events
             action = self.current_screen.handle_event(event)
             # button click
             if action == "Play":

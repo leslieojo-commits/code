@@ -5,6 +5,29 @@
 import pygame
 import time
 import random
+import json
+
+# ========================
+# JSON - File Persistence
+# ========================
+
+def load_high_score():
+    """ Loads and returns saved high score ."""
+    try:
+        with open ("stored_data.json", "r") as file:
+            data = json.load(file) # returns the JSON file as a python dictionary 
+            return data ["high_score"]
+    except (FileNotFoundError, json.JSONDecodeError, KeyError):
+        return 0 # returns 0 if supplier function fails
+
+def save_high_score(score):
+    """ Updates and saves new highscore"""
+    data = {
+            "high_score": score
+        }
+    with open ("stored_data.json", "w") as file:
+        json.dump (data, file, indent=4, sort_keys=True) # writes python dict. into Json with good spacing and alphabetical order
+
 
 # ======================
 # CONSTANTS
@@ -264,44 +287,182 @@ class Text():
 
         game_window.blit(self.surface, self.rect)
 
+class Settings (Screen):
+    """ Controls the speed of the game. """
+
+    def __init__(self, screen_width, screen_height, font, normal_color, hover_color):
+        """ Initializes the attributes of Settings Screen"""
+        self.screen_width = screen_width
+        self.screen_height = screen_height
+        self.font = font
+        self.normal_color = normal_color
+        self.hover_color = hover_color
+        self.angle = 0
+        self.buttons = []
+        self.selected_speed = "Normal"
+        self.create_setting_buttons()
+        self.update_layout(screen_width, screen_height)
+
+
+    def create_setting_buttons (self):
+        """ Creates the Settings Buttons. """
+
+        fast_button = Button("Fast", 0, 0, 300, 100, self.normal_color, self.hover_color, self.font, self.angle)
+        normal_button = Button("Normal", 0, 0, 300, 100, self.normal_color, self.hover_color, self.font, self.angle)
+        slow_button = Button("Slow", 0, 0, 300, 100, self.normal_color, self.hover_color, self.font,  self.angle)
+        back_button = Button("Back", 0, 0, 300, 100, self.normal_color, self.hover_color, self.font, self.angle)
+        self.buttons.extend([fast_button, normal_button, slow_button, back_button])
+
+    def update(self):
+        """ Stores mouse coordinates in a variable and passes it to the settings button. """
+
+        mouse_position = pygame.mouse.get_pos()
+
+        for button in self.buttons:
+            button.update(mouse_position)
+
+    
+    def draw(self, game_window):
+        """ Loops through defined list and executes their draw function. """
+
+        # draws settings buttons
+        for button in self.buttons:
+            button.draw(game_window)
+
+        # Draws text that shows selected speed choice
+        selected_setting_surface = SCORE_FONT.render(f"Selected speed: {self.selected_speed}", True, UI_WHITE)
+        selected_setting_rect = selected_setting_surface.get_rect(center = (self.screen_width // 2, 35))
+
+        game_window.blit (selected_setting_surface, selected_setting_rect)
+    
+    def handle_event(self, event):
+        """ Responsible for handling events in the setting screen. """
+        for button in self.buttons:
+            if button.handle_event(event): 
+
+                # return button text if it is a speed option      
+                if button.text in ("Fast", "Normal", "Slow"):
+                    self.selected_speed = button.text
+                return button.text
+            
+        return None
+    
+    def update_layout(self, width, height):
+
+        #  Receives current screen width & height from the Game Class
+        self.screen_width = width
+        self.screen_height = height
+
+        #  Calculates Button height & width using percentages 
+        button_height = self.screen_height * 0.15
+        button_width =  self.screen_width * 0.4
+
+        #  Calculates total button height
+        total_button_height = len(self.buttons) * button_height
+
+         #  Calculates vertical spacing between each button 
+        remaining_height = self.screen_height - total_button_height
+        vertical_space = remaining_height / (len(self.buttons) + 1)
+
+        #  Defines coordinate position to start drawing the buttons
+        start_x = (self.screen_width - button_width) / 2
+        y = vertical_space        
+
+        # Loop to iterate and arrange all the buttons in the list
+        for button in self.buttons: 
+            button.w = button_width
+            button.h = button_height
+
+            button.surface = pygame.Surface((button.w, button.h), pygame.SRCALPHA)
+            button.rect = button.surface.get_rect(topleft = (start_x, y))#center=(start_x + button.w / 2, y + button.h / 2))
+
+            #  Updates button y position and creates the space between buttons
+            y += button_height + vertical_space
+
 class SnakeGame(Screen):
     """ Controls Snake Screen Properties  """
 
-    def __init__(self, screen_width, screen_height):
+    def __init__(self, screen_width, screen_height, move_delay):
         """ Initializes screen width & height and initializes game board and snake. """
         self._paused = False # Set Pause to False
 
         self.board = None # board not created yet - workaround for update_layout
 
-        # set initial window parameters
+        # Sets up high score for game over
+        self._high_score = load_high_score()
+
+        self._game_over = False
+        self._game_over_buttons = []
+        self.create_game_over_buttons()
+
+          # set initial window parameters
         self.update_layout(screen_width, screen_height)
 
         # Set up the Snake Game & Board
         self.board = Board(self._margin, self._margin + self._hs_bar_height, screen_width - self._margin * 2, screen_height - self._margin * 2)
+
+        self._move_delay = move_delay
         self.reset_game ()
+
+    def create_game_over_buttons(self):
+        """ Creates Game Over Screen Buttons. """
+        retry_button = Button("Retry", 0, 0, 180, 50, BTN_RED, BTN_HOVER_RED, SCORE_FONT, 0)
+        menu_button = Button("Menu", 0, 0, 180, 50, BTN_RED, BTN_HOVER_RED, SCORE_FONT, 0)
+        self._game_over_buttons.extend([retry_button, menu_button ])
+
+    def update_high_score(self):
+        """ Replace the high score when the current score is greater"""
+        #if self._score > 0 and self._score >= self._high_score: # commented out to prevent saving highscore when it doesn't change
+        if self._score > 0 and self._score > self._high_score:
+            self._high_score = self._score
+            save_high_score(self._high_score) # To save new record so it persists after game closes 
+
+    def set_move_delay (self, move_delay):
+        """ Setter to assign appropriate speed value to the SnakeGame to pass to snake"""
+        self._move_delay = move_delay
 
     def reset_game(self):
         """ Responsible for Snake Game & Board set up when called. """
-        self.snake = Snake()
+        self.snake = Snake(self._move_delay)
         self.food  = Food(self.board, self.snake.body)
+
+        self._paused = False
+
+        # Game over is False on restart
+        self._game_over = False
+
+        # Current score resets for every new round
         self._score = 0
 
     def update(self):
         """ Calls a method that updates entities on the Screen. """
-        if not self._paused:  # Only perform updates while the game is not paused
+        if self._game_over:  # Only perform updates while the game is not paused
+            mouse_position = pygame.mouse.get_pos()
+
+            for button in self._game_over_buttons:
+                button.update(mouse_position)
+                
+            return
+        
+        if self._paused:
+            return
             # move the snake
-            moved = self.snake.move(self.board)
+        moved = self.snake.move(self.board)
 
-            if not moved:
-                return
+        if not moved:
+            return
             
-            if self.snake.position == self.food.position:
-                self.snake.growing = True
-                self._score += 1
-                self.food.respawn(self.board, self.snake.body)
+        if self.snake.position == self.food.position:
+            self.snake.growing = True
+            self._score += 1
+            self.food.respawn(self.board, self.snake.body)
 
-            if self.snake.dying:
-                print ("TODO exit the snake game - BORK BORK BORK!!!")
+        if self.snake.dying:
+            self.update_high_score()
+            #print(self._high_score)
+            self._game_over = True
+            #self._paused = True
+            #print ("DONE - exit the snake game - BORK BORK BORK!!!")
 
 
         
@@ -315,6 +476,10 @@ class SnakeGame(Screen):
     def draw(self, game_window):
         """ draw all entities in the game. """
 
+        if self._game_over == True:
+            self.draw_game_over(game_window)
+            return 
+        
         self.board.draw(game_window)
         self.snake.draw(game_window, self.board)
         self.food.draw(game_window, self.board)
@@ -328,12 +493,14 @@ class SnakeGame(Screen):
         pygame.draw.rect(game_window, BTN_RED, pygame.Rect(0, 0, self._screen_width, self._hs_bar_height) )
         game_window.blit(score_surface, score_surface_rect)
 
-        # if the snake is dying, pause the game
-        if self.snake.dying:
-            pause_message = "GAME OVER"
-            self._paused = True
-        else:
-            pause_message = "Paused: press any key"
+        high_score_surface = SCORE_FONT.render(f"High Score: {self._high_score}", False, UI_WHITE )
+        high_score_surface_rect = high_score_surface.get_rect()
+        high_score_surface_rect.topright = (self._screen_width - self._margin, self._margin)
+        game_window.blit(high_score_surface, high_score_surface_rect)
+
+        # If game is pause display this message
+        if self._paused:
+            pause_message = " Paused: press any key"
 
         # Draw the pause if we're paused
         if self._paused:
@@ -342,11 +509,37 @@ class SnakeGame(Screen):
             pause_surface_rect.center = (self._screen_width // 2, self._screen_height // 2)
             game_window.blit(pause_surface, pause_surface_rect)
 
+    def draw_game_over(self, game_window):
+        """ Draws the game over screen. """
+
+        # Clears Screen before drawing the game over
+        game_window.fill(BKGD_RED)
+
+        game_over_surface = TITLE_FONT.render("GAME OVER", True, UI_WHITE)
+        game_over_surface_rect = game_over_surface.get_rect(center = (self._screen_width // 2, self._screen_height * 0.38))
+
+        score_over_surface = SCORE_FONT.render(f"Score: {self._score}", False, UI_WHITE)
+        score_over_surface_rect = score_over_surface.get_rect(center =(self._screen_width // 2, self._screen_height * 0.45))
+        high_score_surface = SCORE_FONT.render(f"High Score: {self._high_score}", False, UI_WHITE )
+        high_score_surface_rect = high_score_surface.get_rect(center = (self._screen_width // 2, self._screen_height * 0.52))
+
+        game_window.blit (game_over_surface, game_over_surface_rect)
+        game_window.blit (score_over_surface, score_over_surface_rect)
+        game_window.blit (high_score_surface, high_score_surface_rect)
         
-        
+        for button in self._game_over_buttons:
+            button.draw(game_window)
 
     def handle_event(self, event):
         """ Responsible for responding to events being triggerd. """
+
+        if self._game_over:
+            for button in self._game_over_buttons:
+                if button.handle_event(event):
+                     return button.text
+                
+            return None
+             
 
         #  Determines the exact moment a key transitions from pressed to released
         keys = pygame.key.get_just_released()
@@ -364,7 +557,7 @@ class SnakeGame(Screen):
         if event.type == pygame.KEYDOWN:
             if self._paused:
                 self._paused = False
-            elif event.key == pygame.K_PAUSE:
+            elif event.key == pygame.K_SPACE:
                 self._paused = True
 
         #  Handles event for restart
@@ -389,6 +582,26 @@ class SnakeGame(Screen):
         #  Passes Current Screen Width & Height to the Board
         if not self.board == None:
             self.board.update_layout(self._margin, self._margin + self._hs_bar_height, width - (self._margin * 2), height - self._hs_bar_height - (self._margin * 2))
+
+        # Calculates Game Over button layout
+        button_width = 180
+        button_height = 50
+        button_gap = 20
+
+        total_width = button_width * 2 + button_gap
+
+        start_x = (self._screen_width - total_width) // 2
+        button_y = int(self._screen_height * 0.65)
+
+        for index, button in enumerate(self._game_over_buttons):
+            button.w = button_width
+            button.h = button_height
+
+            button.surface = pygame.Surface((button_width, button_height), pygame.SRCALPHA)
+
+            x = start_x + index * (button_width + button_gap)
+
+            button.rect = button.surface.get_rect(topleft=(x, button_y))
 
 class Board:
     """ Creates the Game Board """
@@ -482,14 +695,15 @@ class Snake:
     MOVE_LEFT = 3
     MOVE_VECTORS = [ (0,-1), (1,0), (0,1), (-1,0)]
     SEG_HEAD = 0
-    def __init__(self):
+    def __init__(self, move_delay):
         self.body = [ (5,7), (4,7), (3,7) ]
         self._direction = self.MOVE_RIGHT
         self._direction_vector = self.MOVE_VECTORS[self._direction]
         self._color = SNAKE_GREEN
         self._growing = False
         self._dying = False
-        self._move_delay = 0.5 # snake defaults to 1 second - fix this to be defined by the GAME
+        self._move_delay = move_delay
+        #self._move_delay = 0.5 # snake defaults to 1 second - fix this to be defined by the GAME
         self._next_move = time.time() + self._move_delay
 
 
@@ -499,6 +713,7 @@ class Snake:
             # Get the correct rectangle for this position in the board
             tile = board.get_tile_rect(column, row)
             pygame.draw.rect(game_window, self._color, tile)
+            pygame.draw.rect (game_window, BLACK, tile, width = 1)  # Draws Snake Outline
 
     def move(self, board):
         if time.time() > self._next_move:
@@ -530,8 +745,8 @@ class Snake:
         # is it a valid direction
         if dir in [0,1,2,3]:
             # check if reversing with a mod operation
-            if not dir + 2 % 4 == self._direction: # Thsi is a correct solution but i can use it for now to do invalid code and stuff if not (dir + 2) % 4 != self._direction
-            #if not (dir+ 2) % 4 != self._direction:   
+            if not dir + 2 % 4 == self._direction: # Thsi is a correct solution but i can use it for now to do invalid code and stuff if (dir + 2) % 4 != self._direction
+            #if (dir+ 2) % 4 != self._direction:   
                 # set the direction and the vector
                 self._direction = dir
                 self._direction_vector = self.MOVE_VECTORS[self._direction]
@@ -575,8 +790,8 @@ class Food:
         """ Draws Food. """
         column, row = self.position
         tile = board.get_tile_rect(column, row)
-        pygame.draw.rect (game_window, self.color, tile)
-        pygame.draw.rect (game_window, BLACK, tile, width = 1)
+        pygame.draw.rect (game_window, self.color, tile, width = 0, border_radius = 10)
+        pygame.draw.rect (game_window, BLACK, tile, width = 1, border_radius= 10)
 
     def respawn(self, board, snake_body):
         """ Spawns food at random unnoccupied positions. """
@@ -607,10 +822,23 @@ class Game:
 
         self.menu = Menu(self.width, self.height, MAIN_FONT, BTN_RED, BTN_HOVER_RED)
 
-        self.menu.create_buttons()
-        self.menu.update_layout(self.width, self.height)
+        self.menu.create_buttons()  # I should move this into the menu class too
+        self.menu.update_layout(self.width, self.height)  # I should move this too
 
-        self.snake_game = SnakeGame(self.width, self.height)
+        self.settings = Settings(self.width, self.height, MAIN_FONT, BTN_RED, BTN_HOVER_RED)
+
+        # game speed attributes
+        self.speed_delays = {
+            "Fast": 0.1,
+            "Normal": 0.25,
+            "Slow": 0.5
+        }
+
+        # Game Current Speed
+        self.current_speed = "Normal"
+        self.current_delay = self.speed_delays[self.current_speed]
+
+        self.snake_game = SnakeGame(self.width, self.height, self.current_delay)
 
         self.current_screen = self.menu
 
@@ -632,15 +860,49 @@ class Game:
 
                 self.menu.update_layout(self.width, self.height)
                 self.snake_game.update_layout(self.width, self.height)
+                self.settings.update_layout(self.width, self.height)
+                
 
             # handle the current screen's events
             action = self.current_screen.handle_event(event)
             # button click
             if action == "Play":
+                self.snake_game.reset_game() # resets game before starting 
                 self.current_screen = self.snake_game
 
+            elif action == "Retry":
+                self.snake_game.reset_game()
+
+            elif action == "Menu":
+                self.snake_game.reset_game()
+                self.current_screen = self.menu
+
             elif action == "Settings":
+                self.current_screen = self.settings
                 print ("Settings")
+
+            elif action in ("Fast", "Normal", "Slow"):
+                self.current_speed = action
+                self.current_delay = self.speed_delays[action]
+                self.snake_game.set_move_delay(self.current_delay) 
+
+                """ # Updates the speed with accurate dictionary value when button is clicked
+                elif action in ("Fast", "Normal", "Slow"):
+                self.current_speed = action
+                self.current_delay = self.speed_delays
+                self.snake_game.set_move_delay(self.current_delay)
+                elif action == "Fast":
+                self.current_delay = self.speed_delays["Fast"]
+                self.snake_game.set_move_delay(self.current_delay)
+                elif action == "Normal":
+                self.current_delay = self.speed_delays["Normal"]
+                self.snake_game.set_move_delay(self.current_delay)
+                elif action == "Slow":
+                self.current_delay = self.speed_delays["Slow"]
+                self.snake_game.set_move_delay(self.current_delay) """
+
+            elif action == "Back":
+                self.current_screen = self.menu
 
             elif action == "Quit":
                 self.running = False

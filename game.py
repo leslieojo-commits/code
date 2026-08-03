@@ -495,25 +495,25 @@ class SnakeGame(Screen):
         game_window.blit(high_score_surface, high_score_surface_rect)
 
         # If game is pause display this message
-        if self._paused:
-            pause_message = " Paused: press any key"
+        #if self._paused:
+            #pause_message = " Paused: press any key"
 
         # Draw the pause if we're paused
-        if self._paused:
-            pause_surface = SCORE_FONT.render(pause_message, True, UI_WHITE, BTN_RED )
-            pause_surface_rect = pause_surface.get_rect()
-            pause_surface_rect.center = (self._screen_width // 2, self._screen_height // 2)
-            game_window.blit(pause_surface, pause_surface_rect)
+        #if self._paused:
+            #pause_surface = SCORE_FONT.render(pause_message, True, UI_WHITE, BTN_RED )
+            #pause_surface_rect = pause_surface.get_rect()
+            #pause_surface_rect.center = (self._screen_width // 2, self._screen_height // 2)
+            #game_window.blit(pause_surface, pause_surface_rect)
 
         # Gives visual hint about pausing to users
         if self._paused:
-            pause_hint = "SPACEBAR: Resume"
+            pause_hint = "SPACEBAR: Press to Resume"
         else:
             pause_hint = "SPACEBAR: Press to pause"
 
-            pause_hint_surface = SCORE_FONT.render(pause_hint, True, UI_WHITE)
-            pause_hint_surface_rect = pause_hint_surface.get_rect(center = (self._screen_width // 2, self._hs_bar_height // 2))
-            game_window.blit(pause_hint_surface, pause_hint_surface_rect)
+        pause_hint_surface = SCORE_FONT.render(pause_hint, True, UI_WHITE)
+        pause_hint_surface_rect = pause_hint_surface.get_rect(center = (self._screen_width // 2, self._hs_bar_height // 2))
+        game_window.blit(pause_hint_surface, pause_hint_surface_rect)
 
         
 

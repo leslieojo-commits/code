@@ -704,7 +704,7 @@ class Snake:
     MOVE_LEFT = 3
     MOVE_VECTORS = [ (0,-1), (1,0), (0,1), (-1,0)]
     SEG_HEAD = 0
-    MIN_DELAY = 0.05 # The delay should never become smaller than 0.05
+    MIN_DELAY = 0.05 # change back to 0.05 # The delay should never become smaller than 0.05
     SPEED_INCREMENT = 0.95 # speed increment by 5 percent after eating 
 
     def __init__(self, move_delay):
@@ -740,15 +740,15 @@ class Snake:
                 # keep the tail for this movement, then stop growing 
                 self._growing = False 
 
-                print ("Before:", self._move_delay)
+                print (f"Before: {self._move_delay: .5f}")
 
                 # Speed Increment to update snake speed after eating
                 if self._move_delay > self.MIN_DELAY:
                     self._move_delay = self._move_delay * self.SPEED_INCREMENT
 
-                print ("After: ", self._move_delay)
-                print ("Minimum allowed:", self.MIN_DELAY)
-                
+                print (f"After: {self._move_delay: .5f}")
+                print (f"Minimum Allowed {self.MIN_DELAY: .5f}")
+
             else:
                 self.body.pop()
 
@@ -862,7 +862,7 @@ class Game:
         self.speed_delays = {
             "Fast": 0.1,
             "Normal": 0.25,
-            "Slow": 0.5
+            "Slow": 0.35
         }
 
         # Game Current Speed

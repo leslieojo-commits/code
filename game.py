@@ -12,7 +12,7 @@ import json
 # ========================
 
 def load_high_score():
-    """ Loads and returns saved high score ."""
+    """ Loads and returns saved high score """
     try:
         with open ("stored_data.json", "r") as file:
             data = json.load(file) # returns the JSON file as a python dictionary 
@@ -60,7 +60,7 @@ TITLE_FONT_PATH = f"{FONT_FOLDER}\\Poppins-Bold.ttf"
 TITLE_FONT_SIZE = 70
 
 # Score font
-SCORE_FONT_PATH = f"{FONT_FOLDER}\\Poppins-Bold.ttf"
+SCORE_FONT_PATH = f"{FONT_FOLDER}\\Poppins-SemiBold.ttf"
 SCORE_FONT_SIZE = 20
 
 # Button Angle
@@ -82,17 +82,20 @@ SCORE_FONT = pygame.font.Font(SCORE_FONT_PATH, SCORE_FONT_SIZE)
 # =======================
 
 class Button ():
-    """ Controls the button drawing, hovering states and mouse detection. """
+    """ Controls the button drawing, hovering states and mouse detection."""
 
     def __init__(self, text, x, y, w, h, normal_color, hover_color, font, angle=0): 
         """ Initializes a button with with a given text, color, font, and default angle initially set to zero. """
 
         self.w = w
         self.h = h
+
         self.normal_color = normal_color
         self.hover_color = hover_color
+
         self.font = font
         self.text = text
+
         self.angle = angle  # rotation angle
         
         self.hovered = False
@@ -101,7 +104,7 @@ class Button ():
         self.rect = self.surface.get_rect(topleft = (x, y))  # creates the rectangle
 
     def draw (self, game_window):  
-        """ Draws a rotated button that detects when it is hovered over or not. """
+        """ Draws a rotated button that detects when it is hovered over or not."""
 
         #  Clears surface before drawing to prevent visual smearing
         self.surface.fill((0, 0, 0, 0))  
@@ -126,7 +129,7 @@ class Button ():
         game_window.blit(rotated_surface, rotated_rect)   
 
     def update(self, mouse_position):  
-        """ Detects whether button is hovered over or not. """
+        """ Detects whether button is hovered over or not."""
 
         #  Checks if mouse position is inside the button rect. and executes hovering
         if self.rect.collidepoint(mouse_position):
@@ -136,7 +139,7 @@ class Button ():
             self.hovered = False
 
     def handle_event(self, event): 
-        """ Handles event decision upon mouse click detection.  """
+        """ Handles event decision upon mouse click detection."""
 
         # Returns positon of the mouse at the instant if it's clicked
         if event.type == pygame.MOUSEBUTTONDOWN:
@@ -146,7 +149,7 @@ class Button ():
         return False
 
 class Screen: 
-    """ Allows Children classes inherit the current methods or override them. """
+    """ Allows Children classes inherit the current methods or override them."""
 
     # Allows Child classes to inherit update method for processing events
     def update(self):
@@ -166,54 +169,57 @@ class Screen:
         pass
 
 class Menu(Screen):  
-    """ Controls behaiviour of elements contained in the Menu (Button, Text etc.) """
+    """ Controls behaiviour of elements contained in the Menu (Button, Text etc.)"""
 
     def __init__(self, screen_width, screen_height, font, normal_color, hover_color):
-        """ Initializes the Menu with the necessary attributes required. """
-
+        """Initializes Menu Object with required attributes (screen width & height, font, normal_color, hover_color)."""
+        
         self.screen_width = screen_width  
         self.screen_height = screen_height
+
         self.font = font
+
         self.normal_color = normal_color
         self.hover_color = hover_color
+
         self.buttons = []
         self.angle = MENU_BTN_ANGLE
+
         self.title = [
             Text("Not", BLACK, TITLE_FONT, 0, 0),
             Text("Snake", BLACK, TITLE_FONT, 0, 0)
         ]
 
     def create_buttons(self): 
-        """ Creates the Menu Buttons. """
-
+        """Creates Menu buttons with the init parameters."""
         play_button = Button("Play", 0, 0, 300, 100, self.normal_color, self.hover_color, self.font, self.angle)
-        setting_button = Button("Settings", 0, 0, 300, 100, self.normal_color, self.hover_color, self.font, self.angle)
+        setting_button = Button("Speed", 0, 0, 300, 100, self.normal_color, self.hover_color, self.font, self.angle)
         quit_button = Button("Quit", 0, 0, 300, 100, self.normal_color, self.hover_color, self.font,  self.angle)
         self.buttons.extend([play_button, setting_button, quit_button])
 
     def update_layout(self, width, height):
-        """ Creates the layout arrangement for Menu Buttons. """
+        """Creates the layout arrangement for Menu Buttons."""
 
-        #  Receives current screen width & height from the Game Class
+        # Receives current screen width & height from the Game Class update_layout method
         self.screen_width = width
         self.screen_height = height
 
-        #  Calculates Button height & width using percentages 
+        # Calculates resizable Button height & width using percentages 
         button_height = self.screen_height * 0.3
         button_width =  self.screen_width * 0.45
 
-        #  Calculates total button height
+        # Calculates total button height
         total_button_height = 3 * button_height
 
-        #  Calculates spacing between each button 
+        # Calculates spacing between each button 
         remaining_height = self.screen_height - total_button_height
         space = remaining_height / 2
 
-        # Initial coordinates of button in Menu Screen
+        # Sets initial coordinates of button on Menu Screen
         x = -50
         y = 0
 
-        # Loop to iterate and arrange all the buttons in the list
+        # Iterates and arrange all the buttons in the list
         for button in self.buttons: 
             button.w = button_width
             button.h = button_height
@@ -224,41 +230,39 @@ class Menu(Screen):
             #  Updates button y position and creates the space between buttons
             y += button_height + space
 
-        #  Calculates Title Height & Title Width
+        # Calculates Menu title position
         title_x = self.screen_width * 0.85  
         title_y = self.screen_height * 0.80
 
-        # Constant for a visual effect in the title appeareance
+        # Moves [1] in title by a fixed amount 
         spacing = 45
 
-        #  Defines Title Text position on the Menu screen
+        # Updates Title Text position on the Menu screen
         self.title[0].text_set_position(title_x, title_y)  
         self.title[1].text_set_position(title_x - spacing, title_y + self.title[0].rect.height - spacing )  
 
     def draw(self, game_window):
-        """ Loops through defined list and executes their draw function. """
-
+        """Draws all elements in Menu."""
         for button in self.buttons:
             button.draw(game_window)
         
         for text in self.title:
             text.draw(game_window)
 
-        #  Draws a Strikethrough line on the first text in the title list
+        # Draws a Strikethrough line onto the first text in the title list
         pygame.draw.line(game_window, BLACK, (self.title[0].rect.left, self.title[0].rect.centery),
                          (self.title[0].rect.right, self.title[0].rect.centery), 5)
         
     def update(self):
-        """ Stores mouse coordinates in a variable and passes it to button. """
+        """Stores mouse coordinates in a variable and passes it to button."""
+        mouse_position = pygame.mouse.get_pos() # gets mouse position and stores it an object  
 
-        mouse_position = pygame.mouse.get_pos()
-
+        # Calls button update function and passes mouse position
         for button in self.buttons:
             button.update(mouse_position)
 
     def handle_event(self, event):
-        """ Handles the response the button passes when it is clicked. """
-
+        """Handles the response the button passes when it is clicked."""
         for button in self.buttons:
              if button.handle_event(event):
                  return button.text
@@ -266,29 +270,29 @@ class Menu(Screen):
         return None
 
 class Text():
-    """ Controls the attributes of the Menu Text. """
+    """Controls the attributes of the Menu Text."""
 
     def __init__(self, text, color, font, x, y):
-        """ Initializes the Menu text with the required parameters. """
+        """Initializes the Menu text with the required parameters."""
 
         self.text = text
-        self.color = color
         self.font = font
+
+        self.color = color
+
         self.surface = self.font.render(self.text, True, self.color)
         self.rect = self.surface.get_rect(center = (x, y))
 
     def text_set_position(self, x, y):
-        """ Sets Menu text position using rect. """
-
-        self.rect.center = (x, y)
+        """Sets Menu text position with rect."""
+        self.rect.center = (x, y) # uses and stores rect when called
         
     def draw(self, game_window):
-        """ Draws the Menu Text. """
-
+        """Draws the Title."""
         game_window.blit(self.surface, self.rect)
 
 class Settings (Screen):
-    """ Controls the speed of the game. """
+    """Controls the speed of the game."""
 
     def __init__(self, screen_width, screen_height, font, normal_color, hover_color):
         """ Initializes the attributes of Settings Screen"""
@@ -465,14 +469,6 @@ class SnakeGame(Screen):
             #print ("DONE - exit the snake game - BORK BORK BORK!!!")
 
 
-        
-        
-            #check_wall_collision()
-
-
-            #check_self_collision
-
-
     def draw(self, game_window):
         """ draw all entities in the game. """
 
@@ -508,6 +504,18 @@ class SnakeGame(Screen):
             pause_surface_rect = pause_surface.get_rect()
             pause_surface_rect.center = (self._screen_width // 2, self._screen_height // 2)
             game_window.blit(pause_surface, pause_surface_rect)
+
+        # Gives visual hint about pausing to users
+        if self._paused:
+            pause_hint = "SPACEBAR: Resume"
+        else:
+            pause_hint = "SPACEBAR: Press to pause"
+
+            pause_hint_surface = SCORE_FONT.render(pause_hint, True, UI_WHITE)
+            pause_hint_surface_rect = pause_hint_surface.get_rect(center = (self._screen_width // 2, self._hs_bar_height // 2))
+            game_window.blit(pause_hint_surface, pause_hint_surface_rect)
+
+        
 
     def draw_game_over(self, game_window):
         """ Draws the game over screen. """
@@ -553,12 +561,13 @@ class SnakeGame(Screen):
         elif keys[pygame.K_DOWN]:
             self.snake.direction = Snake.MOVE_DOWN
 
-        #  Handles event for pausing
-        if event.type == pygame.KEYDOWN:
-            if self._paused:
-                self._paused = False
-            elif event.key == pygame.K_SPACE:
-                self._paused = True
+        #  Handles event for pausing using only space bar
+        """if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_SPACE:
+                self._paused = not self._paused"""
+
+        if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
+            self._paused = not self._paused
 
         #  Handles event for restart
         if event.type == pygame.KEYDOWN:
@@ -695,6 +704,9 @@ class Snake:
     MOVE_LEFT = 3
     MOVE_VECTORS = [ (0,-1), (1,0), (0,1), (-1,0)]
     SEG_HEAD = 0
+    MIN_DELAY = 0.05
+    SPEED_INCREMENT = 0.95 # speed increment by 5 percent after eating 
+
     def __init__(self, move_delay):
         self.body = [ (5,7), (4,7), (3,7) ]
         self._direction = self.MOVE_RIGHT
@@ -705,6 +717,7 @@ class Snake:
         self._move_delay = move_delay
         #self._move_delay = 0.5 # snake defaults to 1 second - fix this to be defined by the GAME
         self._next_move = time.time() + self._move_delay
+        self._pending_direction = None
 
 
     def draw(self, game_window, board):
@@ -717,6 +730,7 @@ class Snake:
 
     def move(self, board):
         if time.time() > self._next_move:
+            self.update_direction()  # Process any pending direction change
             head_column, head_row = self.body[0]
             direction_column, direction_row = self._direction_vector
 
@@ -724,7 +738,11 @@ class Snake:
             self.body.insert(0, new_head)
             if self._growing:
                 # keep the tail for this movement, then stop growing 
-                self._growing = False
+                self._growing = False 
+
+                # Speed Increment to update snake speed after eating
+                if self._move_delay > self.MIN_DELAY:
+                    self._move_delay = self._move_delay * self.SPEED_INCREMENT
             else:
                 self.body.pop()
 
@@ -744,12 +762,8 @@ class Snake:
         """ set the current direction"""
         # is it a valid direction
         if dir in [0,1,2,3]:
-            # check if reversing with a mod operation
-            if not dir + 2 % 4 == self._direction: # Thsi is a correct solution but i can use it for now to do invalid code and stuff if (dir + 2) % 4 != self._direction
-            #if (dir+ 2) % 4 != self._direction:   
-                # set the direction and the vector
-                self._direction = dir
-                self._direction_vector = self.MOVE_VECTORS[self._direction]
+            self._pending_direction = dir 
+           
     # property declaration for convenience
     direction = property(get_direction, set_direction)
 
@@ -775,6 +789,17 @@ class Snake:
         if type(die).__name__ == "bool":
             self._dying = die
     dying = property( get_dying , set_dying )
+
+    def update_direction(self):
+        # do we have a direction pending
+        if not self._pending_direction is None:
+            # check if reversing with a mod operation
+            if not (self._pending_direction + 2) % 4 == self._direction: # Thsi is a correct solution but i can use it for now to do invalid code and stuff if (dir + 2) % 4 != self._direction
+            #if (dir+ 2) % 4 != self._direction:   
+                # set the direction and the vector
+                self._direction = self._pending_direction
+                self._direction_vector = self.MOVE_VECTORS[self._direction]
+                self._pending_direction = None
 
 
 class Food:
@@ -809,7 +834,7 @@ class Food:
            
         
 
-class Game:
+class Game: 
     def __init__(self):
         self.running = True
 
@@ -877,7 +902,7 @@ class Game:
                 self.snake_game.reset_game()
                 self.current_screen = self.menu
 
-            elif action == "Settings":
+            elif action == "Speed":
                 self.current_screen = self.settings
                 print ("Settings")
 

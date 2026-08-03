@@ -714,7 +714,7 @@ class Snake:
         self._color = SNAKE_GREEN
         self._growing = False
         self._dying = False
-        self._move_delay = move_delay
+        self._move_delay = 0.5 #move_delay
         #self._move_delay = 0.5 # snake defaults to 1 second - fix this to be defined by the GAME
         self._next_move = time.time() + self._move_delay
         self._pending_direction = None
@@ -742,11 +742,13 @@ class Snake:
 
                 print (f"Before: {self._move_delay: .5f}")
 
-                # Speed Increment to update snake speed after eating
-                if self._move_delay > self.MIN_DELAY:
-                    self._move_delay = self._move_delay * self.SPEED_INCREMENT
+                # Updates snake speed incrementally after eating
+                new_delay = self._move_delay * self.SPEED_INCREMENT
+                # stops speed from exceeding defined constant
+                self._move_delay = max(self.MIN_DELAY, new_delay )
 
-                print (f"After: {self._move_delay: .5f}")
+                print (f"Calculated: {new_delay: .5f}")
+                print (f"After / Stored: {self._move_delay: .5f}")
                 print (f"Minimum Allowed {self.MIN_DELAY: .5f}")
 
             else:

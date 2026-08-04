@@ -43,7 +43,9 @@ BTN_RED = pygame.Color (173, 19, 28)
 BTN_HOVER_RED = pygame.Color (210, 60, 40)
 BKGD_RED = pygame.Color (255, 117, 111)
 SNAKE_GREEN = pygame.Color (44, 80, 5)
-TILE_WHITE = pygame.Color (232, 232, 232)
+TILE_WHITE = pygame.Color(248, 244, 244)
+
+
 TILE_RED = pygame.Color (255, 218, 220)
 FOOD_COLOUR = pygame.Color (255, 223, 0)
 
@@ -298,19 +300,24 @@ class Settings (Screen):
         """ Initializes the attributes of Settings Screen"""
         self.screen_width = screen_width
         self.screen_height = screen_height
+
         self.font = font
+
         self.normal_color = normal_color
         self.hover_color = hover_color
+
         self.angle = 0
+
         self.buttons = []
+
         self.selected_speed = "Normal"
+
         self.create_setting_buttons()
         self.update_layout(screen_width, screen_height)
 
 
     def create_setting_buttons (self):
-        """ Creates the Settings Buttons. """
-
+        """Creates the Settings Buttons."""
         fast_button = Button("Fast", 0, 0, 300, 100, self.normal_color, self.hover_color, self.font, self.angle)
         normal_button = Button("Normal", 0, 0, 300, 100, self.normal_color, self.hover_color, self.font, self.angle)
         slow_button = Button("Slow", 0, 0, 300, 100, self.normal_color, self.hover_color, self.font,  self.angle)
@@ -318,9 +325,9 @@ class Settings (Screen):
         self.buttons.extend([fast_button, normal_button, slow_button, back_button])
 
     def update(self):
-        """ Stores mouse coordinates in a variable and passes it to the settings button. """
+        """Stores mouse coordinates in a variable and passes it to the settings button."""
 
-        mouse_position = pygame.mouse.get_pos()
+        mouse_position = pygame.mouse.get_pos() # Stores mouse position 
 
         for button in self.buttons:
             button.update(mouse_position)
@@ -340,7 +347,7 @@ class Settings (Screen):
         game_window.blit (selected_setting_surface, selected_setting_rect)
     
     def handle_event(self, event):
-        """ Responsible for handling events in the setting screen. """
+        """Handles (button) events in the setting screen."""
         for button in self.buttons:
             if button.handle_event(event): 
 
@@ -352,6 +359,7 @@ class Settings (Screen):
         return None
     
     def update_layout(self, width, height):
+        """Updates the layout of elements in the Setting screen."""
 
         #  Receives current screen width & height from the Game Class
         self.screen_width = width
@@ -384,38 +392,42 @@ class Settings (Screen):
             y += button_height + vertical_space
 
 class SnakeGame(Screen):
-    """ Controls Snake Screen Properties  """
+    """ Controls Snake Game Screen Properties."""
 
     def __init__(self, screen_width, screen_height, move_delay):
         """ Initializes screen width & height and initializes game board and snake. """
         self._paused = False # Set Pause to False
 
-        self.board = None # board not created yet - workaround for update_layout
+        self.board = None # Allows update_layout to create the board
 
         # Sets up high score for game over
         self._high_score = load_high_score()
 
+        # Sets up game over attributes
         self._game_over = False
         self._game_over_buttons = []
         self.create_game_over_buttons()
 
-          # set initial window parameters
+        # set initial window parameters
         self.update_layout(screen_width, screen_height)
 
         # Set up the Snake Game & Board
         self.board = Board(self._margin, self._margin + self._hs_bar_height, screen_width - self._margin * 2, screen_height - self._margin * 2)
 
+        # Sets snake speed while playing
         self._move_delay = move_delay
+
+        # Starts game in a fresh state
         self.reset_game ()
 
     def create_game_over_buttons(self):
-        """ Creates Game Over Screen Buttons. """
-        retry_button = Button("Retry", 0, 0, 180, 50, BTN_RED, BTN_HOVER_RED, SCORE_FONT, 0)
-        menu_button = Button("Menu", 0, 0, 180, 50, BTN_RED, BTN_HOVER_RED, SCORE_FONT, 0)
-        self._game_over_buttons.extend([retry_button, menu_button ])
+        """Creates Game Over Screen Buttons."""
+        retry_button = Button("Retry", 0, 0, 180, 50, BTN_RED, BTN_HOVER_RED, MAIN_FONT, 0)
+        menu_button = Button("Menu", 0, 0, 180, 50, BTN_RED, BTN_HOVER_RED, MAIN_FONT, 0)
+        self._game_over_buttons.extend([retry_button, menu_button])
 
     def update_high_score(self):
-        """ Replace the high score when the current score is greater"""
+        """Replace the high score when the current score is greater"""
         #if self._score > 0 and self._score >= self._high_score: # commented out to prevent saving highscore when it doesn't change
         if self._score > 0 and self._score > self._high_score:
             self._high_score = self._score

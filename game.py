@@ -587,15 +587,17 @@ class SnakeGame(Screen):
         if not self.board == None:
             self.board.update_layout(self._margin, self._margin + self._hs_bar_height, width - (self._margin * 2), height - self._hs_bar_height - (self._margin * 2))
 
-        # Calculates Game Over button layout
+        # Calculates Game Over button appearance layout
         button_width = 180
         button_height = 50
         button_gap = 20
 
         total_width = button_width * 2 + button_gap
 
+        # Defines starting position to draw the button
         start_x = (self._screen_width - total_width) // 2
         button_y = int(self._screen_height * 0.65)
+
 
         for index, button in enumerate(self._game_over_buttons):
             button.w = button_width
@@ -603,19 +605,20 @@ class SnakeGame(Screen):
 
             button.surface = pygame.Surface((button_width, button_height), pygame.SRCALPHA)
 
+            # Allows button to be spaced appropriately depending on index number
             x = start_x + index * (button_width + button_gap)
 
             button.rect = button.surface.get_rect(topleft=(x, button_y))
 
 class Board:
-    """ Creates the Game Board """
+    """Creates the Game Board."""
     def __init__(self, x, y, screen_width, screen_height):
 
         #  Initializes screen width & screen height 
         self.screen_width = screen_width
         self.screen_height = screen_height
 
-        #  Defines Number of board rows and columns
+        #  Sets No. of row and columns
         self.columns = 30
         self.rows = 18
 
@@ -627,27 +630,24 @@ class Board:
     def update_layout(self, x, y, width, height):
         """ Responsible for handling board layout and receiving updated screen sizes. """
 
-
-        # Calculation for individual cell width & height
+        # calculates individual cell width & height
         cell_width = width // self.columns
         cell_height = height // self.rows
 
-        #  Ensures cell is always a square 
+        # makes each cell a square 
         self.cell_size = min(cell_width, cell_height)
 
-        #  Defines board width & height
+        # defines board width & height
         board_width = self.columns * self.cell_size
         board_height = self.rows * self.cell_size
 
-        #  Defines rectangle for board width & height
+        # defines rect. for board width & height
         self.rect.width = board_width
         self.rect.height = board_height
 
-        # set position
+        # sets position
         self.rect.x = x + ((width - board_width) // 2)
         self.rect.y = y
-
-
 
     def draw (self, game_window): 
         """ Draws the board tiles (cells). """
@@ -751,8 +751,15 @@ class Snake:
 
             # set next move time
             self._next_move = time.time() + self._move_delay
+
+            # Checks for wall collision 
             if not board.valid_tile(self.body[0]):
+                self.dying = True 
+
+            # Checks for self collision
+            if self.body[0] in self.body[1:]:
                 self.dying = True
+            
                 
             return True
         

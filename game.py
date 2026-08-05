@@ -573,7 +573,10 @@ class SnakeGame(Screen):
 
         #  Handles event for pausing using only space bar
         if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
-            self._paused = not self._paused        
+            self._paused = not self._paused   
+
+        if event.type == pygame.KEYDOWN and  event.key == pygame.K_ESCAPE:
+            self.reset_game()     
 
     def update_layout(self, width, height):
         """ Receives current layout properties from Game Class and updates its entities. """
@@ -879,12 +882,6 @@ class Game:
 
         self.game_window = pygame.display.set_mode((self.width, self.height), pygame.RESIZABLE)
 
-        self.menu = Menu(self.width, self.height, MAIN_FONT, BTN_RED, BTN_HOVER_RED)
-
-        self.snake_game = SnakeGame(self.width, self.height, self.current_delay)
-
-        self.settings = Settings(self.width, self.height, MAIN_FONT, BTN_RED, BTN_HOVER_RED)
-
         # game speed attributes
         self.speed_delays = {
             "Fast": 0.051,
@@ -895,6 +892,11 @@ class Game:
         # Game Current Speed
         self.current_speed = "Normal"
         self.current_delay = self.speed_delays[self.current_speed]
+
+        # Screens
+        self.menu = Menu(self.width, self.height, MAIN_FONT, BTN_RED, BTN_HOVER_RED)
+        self.snake_game = SnakeGame(self.width, self.height, self.current_delay)
+        self.settings = Settings(self.width, self.height, MAIN_FONT, BTN_RED, BTN_HOVER_RED)
 
         self.current_screen = self.menu
 

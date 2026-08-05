@@ -2,9 +2,7 @@ import pygame
 from game import Button 
 
 def test_button_initialization():
-
-    """ Tests that button initializes with correct attributes. """
-
+    """Tests that button initializes with correct attributes."""
     pygame.init()
 
     #  Creates a default font object for the button.
@@ -20,10 +18,9 @@ def test_button_initialization():
     assert button.hovered is False
 
 def test_button_hover(): 
-
-    """ Test to see that button detects mouse hovering, and responds appropriately. """
-
+    """Test to see that button detects mouse hovering, and responds appropriately."""
     pygame.init()
+
     font = pygame.font.SysFont(None, 30)
     button = Button(text = "Play", x=0, y=0, w=300, h=100, normal_color=(255, 0, 0), hover_color=(0, 255, 0), font=font)
 
@@ -33,6 +30,5 @@ def test_button_hover():
     # Passes mouse position to update method to check collision.
     button.update(mouse_position)
 
-    #  Verifies if butt
+    #  Verifies if button is clicked on
     assert button.hovered is True
-

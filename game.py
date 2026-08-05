@@ -1,7 +1,25 @@
+"""
+Snake Game Module
+
+This module contains the core classes and functionality 
+of the Snake game.
+
+Components include:
+- Game: Controls the main game loop and screen switching logic
+- Screen: Serves as parent class for each screen
+- Menu: Handles the main menu interface.
+- Settings: Controls the game settings such as speed.
+- SnakeGame: Handles and controls snake game screen.
+- Board: Creates and manges the game grid.
+- Snake: Handles snake movement and drawing. 
+- Button: Provides reusable UI button functionality.
+- Text: Handles main menu title text.
+- Food: Handles and manages food spawning and generation.
+"""
+
 # ========================
 # IMPORT LIBRARIES
 # ========================
-
 import pygame
 import time
 import random
@@ -10,9 +28,8 @@ import json
 # ========================
 # JSON - File Persistence
 # ========================
-
 def load_high_score():
-    """ Loads and returns saved high score """
+    """Load and returns saved high score."""
     try:
         with open ("stored_data.json", "r") as file:
             data = json.load(file) # returns the JSON file as a python dictionary 
@@ -21,12 +38,13 @@ def load_high_score():
         return 0 # returns 0 if supplier function fails
 
 def save_high_score(score):
-    """ Updates and saves new highscore"""
+    """Update and saves new highscore."""
     data = {
             "high_score": score
         }
     with open ("stored_data.json", "w") as file:
-        json.dump (data, file, indent=4, sort_keys=True) # writes python dict. into Json with good spacing and alphabetical order
+        # writes python dict. into Json with good spacing and alphabetical order
+        json.dump (data, file, indent=4, sort_keys=True) 
 
 
 # ======================
@@ -84,10 +102,10 @@ SCORE_FONT = pygame.font.Font(SCORE_FONT_PATH, SCORE_FONT_SIZE)
 # =======================
 
 class Button ():
-    """ Controls the button drawing, hovering states and mouse detection."""
+    """Controls the button drawing, hovering states and mouse detection."""
 
     def __init__(self, text, x, y, w, h, normal_color, hover_color, font, angle=0): 
-        """ Initializes a button with with a given text, color, font, and default angle initially set to zero. """
+        """Initializes a button with with a given text, color, font, and default angle initially set to zero."""
 
         self.w = w
         self.h = h
@@ -106,7 +124,7 @@ class Button ():
         self.rect = self.surface.get_rect(topleft = (x, y))  # creates the rectangle
 
     def draw (self, game_window):  
-        """ Draws a rotated button that detects when it is hovered over or not."""
+        """Draws a rotated button that detects when it is hovered over or not."""
 
         #  Clears surface before drawing to prevent visual smearing
         self.surface.fill((0, 0, 0, 0))  
@@ -131,7 +149,8 @@ class Button ():
         game_window.blit(rotated_surface, rotated_rect)   
 
     def update(self, mouse_position):  
-        """ Detects whether button is hovered over or not."""
+
+        """Detects whether button is hovered over or not."""
 
         #  Checks if mouse position is inside the button rect. and executes hovering
         if self.rect.collidepoint(mouse_position):
@@ -141,7 +160,7 @@ class Button ():
             self.hovered = False
 
     def handle_event(self, event): 
-        """ Handles event decision upon mouse click detection."""
+        """Handles event decision upon mouse click detection."""
 
         # Returns positon of the mouse at the instant if it's clicked
         if event.type == pygame.MOUSEBUTTONDOWN:
@@ -151,9 +170,9 @@ class Button ():
         return False
 
 class Screen: 
-    """ Allows Children classes inherit the current methods or override them."""
+    """Allows Children classes inherit the current methods or override them."""
 
-    # Allows Child classes to inherit update method for processing events
+    #  Allows Child classes to inherit update method for processing events
     def update(self):
         pass
 
@@ -171,7 +190,7 @@ class Screen:
         pass
 
 class Menu(Screen):  
-    """ Controls behaiviour of elements contained in the Menu (Button, Text etc.)"""
+    """Controls behaiviour of elements contained in the Menu (Button, Text etc.)"""
 
     def __init__(self, screen_width, screen_height, font, normal_color, hover_color):
         """Initializes Menu Object with required attributes (screen width & height, font, normal_color, hover_color)."""
@@ -300,7 +319,7 @@ class Settings (Screen):
     """Controls the speed of the game."""
 
     def __init__(self, screen_width, screen_height, font, normal_color, hover_color):
-        """ Initializes the attributes of Settings Screen"""
+        """Initializes the attributes of Settings Screen"""
         self.screen_width = screen_width
         self.screen_height = screen_height
 
@@ -337,7 +356,7 @@ class Settings (Screen):
 
     
     def draw(self, game_window):
-        """ Loops through defined list and executes their draw function. """
+        """Loops through defined list and executes their draw function."""
 
         # draws settings buttons
         for button in self.buttons:
@@ -395,10 +414,10 @@ class Settings (Screen):
             y += button_height + vertical_space
 
 class SnakeGame(Screen):
-    """ Controls Snake Game Screen Properties."""
+    """Controls Snake Game Screen Properties."""
 
     def __init__(self, screen_width, screen_height, move_delay):
-        """ Initializes screen width & height and initializes game board and snake. """
+        """Initializes screen width & height and initializes game board and snake."""
         self._paused = False # Set Pause to False
 
         self.board = None # Allows update_layout to create the board
@@ -430,13 +449,13 @@ class SnakeGame(Screen):
         self._game_over_buttons.extend([retry_button, menu_button])
 
     def update_high_score(self):
-        """Replace the high score when the current score is greater"""
+        """Replace the high score when the current score is greater."""
         if self._score > 0 and self._score > self._high_score:
             self._high_score = self._score
             save_high_score(self._high_score) # Saves new record and persists it after program closes
 
     def set_move_delay (self, move_delay):
-        """Sets appropriate speed value to the SnakeGame to pass to snake"""
+        """Sets appropriate speed value to the SnakeGame to pass to snake."""
         self._move_delay = move_delay
 
     def reset_game(self):
@@ -573,13 +592,10 @@ class SnakeGame(Screen):
 
         #  Handles event for pausing using only space bar
         if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
-            self._paused = not self._paused   
-
-        if event.type == pygame.KEYDOWN and  event.key == pygame.K_ESCAPE:
-            self.reset_game()     
+            self._paused = not self._paused    
 
     def update_layout(self, width, height):
-        """ Receives current layout properties from Game Class and updates its entities. """
+        """Receives current layout properties from Game Class and updates its entities."""
 
         #  Receives Screen Width & Height Properties
         self._screen_width = width
@@ -634,7 +650,7 @@ class Board:
         self.update_layout(x, y, screen_width, screen_height)
 
     def update_layout(self, x, y, width, height):
-        """ Responsible for handling board layout and receiving updated screen sizes. """
+        """Responsible for handling board layout and receiving updated screen sizes."""
 
         # calculates individual cell width & height
         cell_width = width // self.columns
@@ -656,7 +672,7 @@ class Board:
         self.rect.y = y
 
     def draw (self, game_window): 
-        """Draws the board tiles"""
+        """Draws the board tiles."""
 
         # draw the board tiles using a nested loop
         for row in range(self.rows):
@@ -680,14 +696,14 @@ class Board:
                 pygame.draw.rect(game_window, color, tile)
 
     def get_tile_rect (self, column, row): 
-        """ Returns cell coordinate, size when called."""
+        """Returns cell coordinate, size when called."""
         x = self.rect.left + column * self.cell_size
         y = self.rect.top + row * self.cell_size
 
         return pygame.Rect(x, y, self.cell_size, self.cell_size)
 
     def valid_tile(self, tile_pos):
-        """Checks if the tile is inside the board(for snake death)"""
+        """Checks if the tile is inside the board(for snake death)."""
         column, row = tile_pos
         if column < 0 or column >= self.columns or row < 0 or row >= self.rows:
             return False
@@ -777,11 +793,11 @@ class Snake:
         return False
         
     def get_direction(self):
-        """ return the current direction """
+        """return the current direction."""
         return self._direction
     
     def set_direction(self, dir):
-        """ set the current direction"""
+        """set the current direction."""
 
         # Checks for a valid direction
         if dir in [0,1,2,3]:
@@ -820,7 +836,7 @@ class Snake:
     dying = property( get_dying , set_dying )
 
     def update_direction(self):
-        """Processes one pending direction before the snake moves."""
+        """Process one pending direction before the snake moves."""
 
         # Checks if direction is pending
         if not self._pending_direction is None:
@@ -901,7 +917,7 @@ class Game:
         self.current_screen = self.menu
 
     def process_events(self):
-        """ main event processing loop."""
+        """main event processing loop."""
 
         # processes event list
         for event in pygame.event.get():

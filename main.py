@@ -1,21 +1,28 @@
+"""
+main.py
+
+This module serves as the entry point for the Snake game application.
+
+It initialises the game object and starts teh main game loop, 
+which controls the event handling, updating game states, drawing game elements
+and rendering the display.
+"""
+
 # ========================
 # IMPORT LIBRARIES
 # ========================
-
 import pygame
 from game import Game
 
 # ========================
 # INITIALIZATION
 # ========================
-
 pygame.init()
 pygame.display.set_caption("Not Snake game")
 
 # ========================
 #  GAME LOOP 
 # ========================
-
 #  Creates a game object that refers to Game Class.
 game = Game()
 

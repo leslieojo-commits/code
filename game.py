@@ -83,6 +83,10 @@ TITLE_FONT_SIZE = 70
 SCORE_FONT_PATH = f"{FONT_FOLDER}\\Poppins-SemiBold.ttf"
 SCORE_FONT_SIZE = 20
 
+# Pause font
+PAUSE_FONT_PATH = f"{FONT_FOLDER}\\Poppins-SemiBold.ttf"
+PAUSE_FONT_SIZE = 12
+
 # Button Angle
 MENU_BTN_ANGLE = -5
 
@@ -95,6 +99,7 @@ pygame.init()
 MAIN_FONT = pygame.font.Font(MAIN_FONT_PATH, MAIN_FONT_SIZE) 
 TITLE_FONT = pygame.font.Font(TITLE_FONT_PATH, TITLE_FONT_SIZE)
 SCORE_FONT = pygame.font.Font(SCORE_FONT_PATH, SCORE_FONT_SIZE)
+PAUSE_FONT = pygame.font.Font(PAUSE_FONT_PATH, PAUSE_FONT_SIZE)
 
 
 # =======================
@@ -540,7 +545,7 @@ class SnakeGame(Screen):
             pause_hint = "SPACEBAR: Press to pause"
 
         # Draws visual hint
-        pause_hint_surface = SCORE_FONT.render(pause_hint, True, UI_WHITE)
+        pause_hint_surface = PAUSE_FONT.render(pause_hint, True, UI_WHITE)
         pause_hint_surface_rect = pause_hint_surface.get_rect(center = (self._screen_width // 2, self._hs_bar_height // 2))
         game_window.blit(pause_hint_surface, pause_hint_surface_rect)
 
@@ -592,7 +597,7 @@ class SnakeGame(Screen):
 
         #  Handles event for pausing using only space bar
         if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
-            self._paused = not self._paused    
+            self._paused = not self._paused   
 
     def update_layout(self, width, height):
         """Receives current layout properties from Game Class and updates its entities."""

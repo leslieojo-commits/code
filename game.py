@@ -559,7 +559,7 @@ class SnakeGame(Screen):
             return
 
         # Snake grows after eating, updates current score, and spaws food randomly elsewhere           
-        if self._snake.position == self._food.position:
+        if self._snake.position == self._food._position:
             self._snake.growing = True
             self._score += 1
             self._food.respawn(self._board, self._snake._body)
@@ -903,7 +903,7 @@ class Snake:
         return self._growing
     
     def set_growing(self, new_growing):
-        """Updates teh snake's growing state."""
+        """Updates the snake's growing state."""
         if isinstance(new_growing, bool):
             self._growing = new_growing
     growing = property( get_growing, set_growing )
@@ -914,7 +914,7 @@ class Snake:
     position = property(get_position)
  
     def get_dying(self):
-        """Returns wheter snake is dying."""
+        """Returns whether snake is dying."""
         return self._dying 
 
     dying = property( get_dying )
@@ -938,19 +938,25 @@ class Food:
 
     def __init__(self, board, snake_body):
         """Initializes the food parameters."""
-        self.color = FOOD_COLOUR
-        self.border_outline_color = BLACK
+        self._color = FOOD_COLOUR
+        self._border_outline_color = BLACK
 
+        self._position = None
         self.respawn (board, snake_body) 
+
+    def get_position(self):
+        """Returns the food current board position."""
+        return self._position
+    position = property(get_position)
 
     def draw(self, game_window, board):
         """Draws Food."""
-        column, row = self.position
+        column, row = self._position
         
         tile = board.get_tile_rect(column, row)
 
-        pygame.draw.rect (game_window, self.color, tile, width = 0, border_radius = 10)
-        pygame.draw.rect (game_window, self.border_outline_color, tile, width = 1, border_radius= 10)
+        pygame.draw.rect (game_window, self._color, tile, width = 0, border_radius = 10)
+        pygame.draw.rect (game_window, self._border_outline_color, tile, width = 1, border_radius= 10)
 
     def respawn(self, board, snake_body):
         """Spawns food at random unnoccupied positions."""
@@ -961,44 +967,49 @@ class Food:
         # stores random column, row as a tuple in position
         position = (column, row)
 
-        # prevent food from spawing directly on snake head
+        # prevent food from spawning anywhere on snake
         while position in snake_body:
             column = random.randint(0, board.columns -1)
             row = random.randint(0, board.rows - 1)
 
             position = (column, row)
 
-        self.position = position
+        self._position = position
     
 class Game: 
-    """Controls Game Loop, and overall Game attributes, elements"""
+    """Controls Game Loop, and overall Game attributes."""
     def __init__(self):
-        self.running = True
+        self._running = True
 
-        self.clock = pygame.time.Clock()
+        self._clock = pygame.time.Clock()
 
-        self.width = SCREEN_WIDTH
-        self.height = SCREEN_HEIGHT
+        self._width = SCREEN_WIDTH
+        self._height = SCREEN_HEIGHT
 
-        self.game_window = pygame.display.set_mode((self.width, self.height), pygame.RESIZABLE)
+        self._game_window = pygame.display.set_mode((self._width, self._height), pygame.RESIZABLE)
 
         # game speed attributes
-        self.speed_delays = {
+        self._speed_delays = {
             "Fast": 0.051,
             "Normal": 0.25,
             "Slow": 0.35
         }
 
         # Game Current Speed
-        self.current_speed = "Normal"
-        self.current_delay = self.speed_delays[self.current_speed]
+        self._current_speed = "Normal"
+        self._current_delay = self._speed_delays[self._current_speed]
 
         # Screens
-        self.menu = Menu(self.width, self.height, MAIN_FONT, BTN_RED, BTN_HOVER_RED)
-        self.snake_game = SnakeGame(self.width, self.height, self.current_delay)
-        self.settings = Settings(self.width, self.height, MAIN_FONT, BTN_RED, BTN_HOVER_RED)
+        self._menu = Menu(self._width, self._height, MAIN_FONT, BTN_RED, BTN_HOVER_RED)
+        self._snake_game = SnakeGame(self._width, self._height, self._current_delay)
+        self._settings = Settings(self._width, self._height, MAIN_FONT, BTN_RED, BTN_HOVER_RED)
 
-        self.current_screen = self.menu
+        self._current_screen = self._menu
+
+    def get_running(self):
+        """returns whether game is running."""
+        return self._running
+    running = property(get_running)
 
     def process_events(self):
         """main event processing loop."""
@@ -1008,70 +1019,70 @@ class Game:
 
             # quits
             if event.type == pygame.QUIT:
-                self.running = False
+                self._running = False
 
             # window resize
             elif event.type == pygame.VIDEORESIZE:
 
                 # updates width, height when window resizes
-                self.width = event.w
-                self.height = event.h 
+                self._width = event.w
+                self._height = event.h 
 
                 # Screen
-                self.game_window = pygame.display.set_mode((self.width, self.height), pygame.RESIZABLE)
+                self._game_window = pygame.display.set_mode((self._width, self._height), pygame.RESIZABLE)
 
                 # passes new width, heigt to respective update_layout
-                self.menu.update_layout(self.width, self.height)
-                self.snake_game.update_layout(self.width, self.height)
-                self.settings.update_layout(self.width, self.height)
+                self._menu.update_layout(self._width, self._height)
+                self._snake_game.update_layout(self._width, self._height)
+                self._settings.update_layout(self._width, self._height)
                 
 
             # handle the current screen's events
-            action = self.current_screen.handle_event(event)
+            action = self._current_screen.handle_event(event)
 
             # button click
             if action == "Play":
                 # resets game before starting 
-                self.snake_game.reset_game() 
+                self._snake_game.reset_game() 
 
                 # switches current screen (Menu) to snake game screen
-                self.current_screen = self.snake_game 
+                self._current_screen = self._snake_game 
 
             elif action == "Retry": 
-                self.snake_game.reset_game()
+                self._snake_game.reset_game()
 
             elif action == "Menu":
-                self.snake_game.reset_game()
-                self.current_screen = self.menu
+                self._snake_game.reset_game()
+                self._current_screen = self._menu
 
             # When Speed button is selected switch to the setting screen
             elif action == "Speed":
-                self.current_screen = self.settings
+                self._current_screen = self._settings
 
             # In setting screen, update speed depending on the button clicked
             elif action in ("Fast", "Normal", "Slow"):
-                self.current_speed = action
-                self.current_delay = self.speed_delays[action]
-                self.snake_game.set_move_delay(self.current_delay) 
+                self._current_speed = action
+                self._current_delay = self._speed_delays[action]
+                self._snake_game.set_move_delay(self._current_delay) 
 
             # Switches setting screen to menu
             elif action == "Back":
-                self.current_screen = self.menu
+                self._current_screen = self._menu
 
             # Quits
             elif action == "Quit":
-                self.running = False
+                self._running = False
 
     def update (self):
         """runs the current screen (Menu, Setting, SnakeGame) update function."""
-        self.current_screen.update()
+        self._current_screen.update()
 
     def draw (self):
         """runs the draw function of the current screen."""
-        self.game_window.fill(BKGD_RED)
-        self.current_screen.draw(self.game_window)
+        self._game_window.fill(BKGD_RED)
+        self._current_screen.draw(self._game_window)
 
     def render (self):
         """renders the display and sets the FPS."""
         pygame.display.flip()
-        self.clock.tick(60)
+        self._clock.tick(60)

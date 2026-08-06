@@ -12,10 +12,10 @@ def test_button_initialization():
     button = Button(text = "Play", x=0, y=0, w=300, h=100, normal_color=(255, 0, 0), hover_color=(0, 255, 0), font=font)
 
     #  Verifies button initializes its correct attributes.
-    assert button.text == "Play"
-    assert button.w == 300
-    assert button.h == 100
-    assert button.hovered is False
+    assert button._text == "Play"
+    assert button._w == 300
+    assert button._h == 100
+    assert button._hovered is False
 
 def test_button_hover(): 
     """Test to see that button detects mouse hovering, and responds appropriately."""
@@ -31,4 +31,4 @@ def test_button_hover():
     button.update(mouse_position)
 
     #  Verifies if button is clicked on
-    assert button.hovered is True
+    assert button._hovered is True

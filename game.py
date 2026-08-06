@@ -487,7 +487,8 @@ class SnakeGame(Screen):
         """Initializes screen width & height and initializes game board and snake."""
         self._paused = False # Set Pause to False
 
-        self.board = None # Allows update_layout to create the board
+        # Allows update_layout to create the board
+        self._board = None 
 
         # Sets up high score for game over
         self._high_score = load_high_score()
@@ -501,7 +502,7 @@ class SnakeGame(Screen):
         self.update_layout(screen_width, screen_height)
 
         # Set up the Snake Game & Board
-        self.board = Board(self._margin, self._margin + self._hs_bar_height, screen_width - self._margin * 2, screen_height - self._margin * 2)
+        self._board = Board(self._margin, self._margin + self._hs_bar_height, screen_width - self._margin * 2, screen_height - self._margin * 2)
 
         # Sets snake speed while playing
         self._move_delay = move_delay
@@ -527,8 +528,8 @@ class SnakeGame(Screen):
 
     def reset_game(self):
         """Responsible for Snake Game & Board set up when called."""
-        self.snake = Snake(self._move_delay)
-        self.food  = Food(self.board, self.snake.body)
+        self._snake = Snake(self._move_delay)
+        self._food  = Food(self._board, self._snake._body)
 
         # pause is false on restart
         self._paused = False
@@ -553,18 +554,18 @@ class SnakeGame(Screen):
             return
 
         # move the snake
-        moved = self.snake.move(self.board)
+        moved = self._snake.move(self._board)
         if not moved:
             return
 
         # Snake grows after eating, updates current score, and spaws food randomly elsewhere           
-        if self.snake.position == self.food.position:
-            self.snake.growing = True
+        if self._snake.position == self._food.position:
+            self._snake.growing = True
             self._score += 1
-            self.food.respawn(self.board, self.snake.body)
+            self._food.respawn(self._board, self._snake._body)
 
         # Update snake highscore after death
-        if self.snake.dying:
+        if self._snake._dying:
             self.update_high_score()
             self._game_over = True
 
@@ -576,11 +577,11 @@ class SnakeGame(Screen):
             self.draw_game_over(game_window)
             return 
         
-        self.board.draw(game_window)
+        self._board.draw(game_window)
 
-        self.snake.draw(game_window, self.board)
+        self._snake.draw(game_window, self._board)
 
-        self.food.draw(game_window, self.board)
+        self._food.draw(game_window, self._board)
 
         self.draw_hud(game_window)
 
@@ -618,12 +619,12 @@ class SnakeGame(Screen):
         game_window.fill(BKGD_RED)
 
         game_over_surface = TITLE_FONT.render("GAME OVER", True, UI_WHITE)
-        game_over_surface_rect = game_over_surface.get_rect(center = (self._screen_width // 2, self._screen_height * 0.38))
+        game_over_surface_rect = game_over_surface.get_rect(center = (self._screen_width // 2, self._screen_height * 0.35))
 
         score_over_surface = SCORE_FONT.render(f"Score: {self._score}", False, UI_WHITE)
         score_over_surface_rect = score_over_surface.get_rect(center =(self._screen_width // 2, self._screen_height * 0.45))
         high_score_surface = SCORE_FONT.render(f"High Score: {self._high_score}", False, UI_WHITE )
-        high_score_surface_rect = high_score_surface.get_rect(center = (self._screen_width // 2, self._screen_height * 0.52))
+        high_score_surface_rect = high_score_surface.get_rect(center = (self._screen_width // 2, self._screen_height * 0.55))
 
         # Draws the Gameover, score, highscore text
         game_window.blit (game_over_surface, game_over_surface_rect)
@@ -641,21 +642,20 @@ class SnakeGame(Screen):
                 if button.handle_event(event):
                      return button.text  # sends the name of clicked button to Game Class for processing 
                 
-            return None
-             
+            return None   
 
         #  Determines the exact moment a key transitions from pressed to released
         keys = pygame.key.get_just_released()
 
         # Arrow Keys movement logic
         if keys[pygame.K_LEFT] :
-            self.snake.direction = Snake.MOVE_LEFT
+            self._snake.direction = Snake.MOVE_LEFT
         elif keys[pygame.K_RIGHT]:
-           self.snake.direction = Snake.MOVE_RIGHT
+           self._snake.direction = Snake.MOVE_RIGHT
         elif keys[pygame.K_UP]:
-            self.snake.direction = Snake.MOVE_UP
+            self._snake.direction = Snake.MOVE_UP
         elif keys[pygame.K_DOWN]:
-            self.snake.direction = Snake.MOVE_DOWN
+            self._snake.direction = Snake.MOVE_DOWN
 
         #  Handles event for pausing using only space bar
         if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
@@ -673,8 +673,8 @@ class SnakeGame(Screen):
         self._hs_bar_height = int(height * 0.12)
 
         #  Passes Current Screen Width & Height to the Board
-        if not self.board == None:
-            self.board.update_layout(self._margin, self._margin + self._hs_bar_height, width - (self._margin * 2), height - self._hs_bar_height - (self._margin * 2))
+        if not self._board == None:
+            self._board.update_layout(self._margin, self._margin + self._hs_bar_height, width - (self._margin * 2), height - self._hs_bar_height - (self._margin * 2))
 
         # Calculates Game Over button appearance layout
         button_width = 180
@@ -704,55 +704,78 @@ class Board:
     def __init__(self, x, y, screen_width, screen_height):
 
         #  Initializes screen width & screen height 
-        self.screen_width = screen_width
-        self.screen_height = screen_height
+        self._screen_width = screen_width
+        self._screen_height = screen_height
 
         #  Sets No. of row and columns
-        self.columns = 30
-        self.rows = 18
+        self._columns = 30
+        self._rows = 18
 
-        self.rect = pygame.Rect(0, 0, 0, 0)
+        # stores the calculated size of each square boarad cell
+        self._cell_size = 0
 
-        #  Calls update_layout method to process screen width and height
+        self._rect = pygame.Rect(0, 0, 0, 0)
+
+        # calls update_layout method to process screen width and height
         self.update_layout(x, y, screen_width, screen_height)
+
+    def get_columns(self):
+        """Returns the number of columns in the board."""
+        return self._columns
+    columns = property(get_columns)
+
+    def get_rows(self):
+        """Returns teh number of rows in the board."""
+        return self._rows
+    rows = property(get_rows)
+
+    def get_rect(self):
+        """Returns the rectangle representing the board."""
+        return self._rect
+    rect = property(get_rect)
+
+    def get_cell_size(self):
+        "Returns the size of each board cell (for unit test code)"
+        return self._cell_size
+    cell_size = property(get_cell_size)
 
     def update_layout(self, x, y, width, height):
         """Responsible for handling board layout and receiving updated screen sizes."""
 
         # calculates individual cell width & height
-        cell_width = width // self.columns
-        cell_height = height // self.rows
+        cell_width = width // self._columns
+        cell_height = height // self._rows
 
         # makes each cell a square 
-        self.cell_size = min(cell_width, cell_height)
+        self._cell_size = min(cell_width, cell_height)
 
         # defines board width & height
-        board_width = self.columns * self.cell_size
-        board_height = self.rows * self.cell_size
+        board_width = self._columns * self._cell_size
+        board_height = self._rows * self._cell_size
 
         # defines rect. for board width & height
-        self.rect.width = board_width
-        self.rect.height = board_height
+        self._rect.width = board_width
+        self._rect.height = board_height
 
         # sets position
-        self.rect.x = x + ((width - board_width) // 2)
-        self.rect.y = y
+        self._rect.x = x + ((width - board_width) // 2)
+        self._rect.y = y
 
     def draw (self, game_window): 
         """Draws the board tiles."""
 
         # draw the board tiles using a nested loop
-        for row in range(self.rows):
+        for row in range(self._rows):
 
-            for column in range(self.columns):
+            for column in range(self._columns):
 
                 # defines x-coordinates of each tile
-                x = self.rect.left + column * self.cell_size
+                x = self._rect.left + column * self._cell_size
 
                 # defines y-coordinate of each tile
-                y = self.rect.top + row * self.cell_size
+                y = self._rect.top + row * self._cell_size
 
-                tile  = pygame.Rect(x, y, self.cell_size, self.cell_size)
+                tile  = pygame.Rect(x, y, self._cell_size, self._cell_size)
 
                 # sets grid color
                 if (row + column) % 2 == 0:
@@ -764,15 +787,15 @@ class Board:
 
     def get_tile_rect (self, column, row): 
         """Returns cell coordinate, size when called."""
-        x = self.rect.left + column * self.cell_size
-        y = self.rect.top + row * self.cell_size
+        x = self._rect.left + column * self._cell_size
+        y = self._rect.top + row * self._cell_size
 
-        return pygame.Rect(x, y, self.cell_size, self.cell_size)
+        return pygame.Rect(x, y, self._cell_size, self._cell_size)
 
     def valid_tile(self, tile_pos):
         """Checks if the tile is inside the board(for snake death)."""
         column, row = tile_pos
-        if column < 0 or column >= self.columns or row < 0 or row >= self.rows:
+        if column < 0 or column >= self._columns or row < 0 or row >= self._rows:
             return False
         
         return True   
@@ -792,7 +815,7 @@ class Snake:
 
     def __init__(self, move_delay):
         """Initializes all the attriutes necessary for snake."""
-        self.body = [ (5,7), (4,7), (3,7) ]
+        self._body = [ (5,7), (4,7), (3,7) ]
 
         self._direction = self.MOVE_RIGHT
         self._direction_vector = self.MOVE_VECTORS[self._direction]
@@ -807,10 +830,14 @@ class Snake:
         self._next_move = time.time() + self._move_delay
         self._pending_direction = None
 
+    def get_body(self):
+        """Returns teh positions occupied by the snake"""
+        return self._body
+    body = property(get_body)
 
     def draw(self, game_window, board):
         """Draws the snake onto the board."""
-        for column, row in self.body:
+        for column, row in self._body:
 
             # retrieves correct rect for particular board position
             tile = board.get_tile_rect(column, row)
@@ -822,14 +849,14 @@ class Snake:
         if time.time() > self._next_move:
             self.update_direction()  # Process any pending direction change
 
-            head_column, head_row = self.body[0]
+            head_column, head_row = self._body[0]
             direction_column, direction_row = self._direction_vector
 
             # creates new head
             new_head = (head_column + direction_column, head_row + direction_row)
 
             # inserts new head
-            self.body.insert(0, new_head)
+            self._body.insert(0, new_head)
 
             # Snake eats & grows once, then reset till next cycle
             if self._growing:
@@ -842,65 +869,55 @@ class Snake:
                 self._move_delay = max(self.MIN_DELAY, new_delay )
 
             else:
-                self.body.pop() # adds new head & removes old tail
+                self._body.pop() # adds new head & removes old tail
 
             # set next move time
             self._next_move = time.time() + self._move_delay
 
             # Checks for wall collision 
-            if not board.valid_tile(self.body[0]):
-                self.dying = True 
+            if not board.valid_tile(self._body[0]):
+                self._dying = True 
 
             # Checks for self collision
-            if self.body[0] in self.body[1:]:
-                self.dying = True
+            if self._body[0] in self._body[1:]:
+                self._dying = True
                 
             return True
         
         return False
         
     def get_direction(self):
-        """return the current direction."""
+        """return the snake's current direction."""
         return self._direction
     
-    def set_direction(self, dir):
+    def set_direction(self, new_direction):
         """set the current direction."""
-
         # Checks for a valid direction
-        if dir in [0,1,2,3]:
-            self._pending_direction = dir 
-           
+        if new_direction in (0,1,2,3):
+            self._pending_direction = new_direction     
     # property declaration for convenience
     direction = property(get_direction, set_direction)
 
     def get_growing(self):
-        """Property function for internal "_growing" status."""
+        """returns internal "_growing" status."""
         return self._growing
     
-    def set_growing(self, grow):
-        """Property function for internal "_growing" status."""
-
-        # check for "growing" boolean type  
-        if type(grow).__name__ == "bool":
-            self._growing = grow
+    def set_growing(self, new_growing):
+        """Updates teh snake's growing state."""
+        if isinstance(new_growing, bool):
+            self._growing = new_growing
     growing = property( get_growing, set_growing )
 
     def get_position(self):
-        """Property Function to return snake position."""
-        return self.body[self.SEG_HEAD]
+        """Returns position of the snake head."""
+        return self._body[self.SEG_HEAD]
     position = property(get_position)
  
     def get_dying(self):
-        """Property function to get snake dying."""
+        """Returns wheter snake is dying."""
         return self._dying 
-    
-    def set_dying(self, die):
-        """Property function to set snake dying."""
 
-        # check for boolean type  
-        if type(die).__name__ == "bool":
-            self._dying = die
-    dying = property( get_dying , set_dying )
+    dying = property( get_dying )
 
     def update_direction(self):
         """Process one pending direction before the snake moves."""

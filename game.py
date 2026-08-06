@@ -191,8 +191,8 @@ class Button ():
         return self._w
     def set_w(self, new_w):
         """ set the width for this button 
-            expects an integern of minimum  of 180 """
-        if new_w >= 300:
+            expects an integer with a positive dimension"""
+        if isinstance (new_w, (int, float)) and new_w > 0:
             self._w = new_w
     w = property(get_w, set_w)
 
@@ -201,10 +201,10 @@ class Button ():
         return self._h
     def set_h(self, new_h):
         """ set the height for this button 
-            expects an integern of minimum  of 50 """
-        if new_h >= 100:
+            expects an integer with a positve dimension"""
+        if isinstance(new_h, (int, float)) and new_h > 0:
             self._h = new_h
-    h = property(get_h, set_h)
+    h = property(get_h, set_h) 
 
 
     def update(self, mouse_position):  
@@ -253,7 +253,8 @@ class Menu(Screen):
     def __init__(self, screen_width, screen_height, font, normal_color, hover_color):
         """ Initializes Menu Object with required 
             attributes (screen width & height, font, 
-            normal_color, hover_color)."""
+            normal_color, hover_color).
+        """
         
         self._screen_width = screen_width  
         self._screen_height = screen_height
@@ -274,76 +275,6 @@ class Menu(Screen):
 
         self.create_buttons()  # creates Menu Button
         self.update_layout(screen_width, screen_height)  
-
-    def get_screen_width(self):
-        """Returns the current width of the menu screen."""
-        return self._screen_width
-
-    def set_screen_width(self, new_screen_width):
-        """Sets the width of the menu screen
-            expects a positive number."""
-        if isinstance (new_screen_width, (int, float)): # checks for only valid input 
-            if new_screen_width > 0:
-                self._screen_width = new_screen_width
-    screen_width = property(get_screen_width, set_screen_width)   
-
-    def get_font(self):
-        """Returns the font used by the menu buttons."""
-        return self._font
-
-    def set_font(self, new_font):
-        """ Sets the font used by the menu buttons
-            Expects a pygame font.
-        """ 
-        if isinstance (new_font, pygame.font.Font):
-            self._font = new_font
-    font = property(get_font, set_font)
-
-    def get_normal_color(self):
-        """Returns the normal colour of the menu buttons."""
-        return self._normal_color
-
-    def set_normal_color(self, new_normal_color):
-        """Sets the normal colour of the menu buttons.
-            Exepects a pygame colour.
-        """
-        if isinstance(new_normal_color, pygame.Color):
-            self._normal_color = new_normal_color
-    normal_color = property (get_normal_color, set_normal_color)
-
-    def get_hover_color(self):
-        """Returns the hover colour of the menu buttons."""
-        return self._hover_color
-
-    def set_hover_color(self, new_hover_color):
-        """Sets the hover color of the menu buttons.
-            Expects a pygame color.
-        """
-        if isinstance(new_hover_color, pygame.Color):
-            self._hover_color = new_hover_color
-    hover_color = property(get_hover_color, set_hover_color)
-
-    def get_angle(self):
-        """Returns the angle applied to the menu buttons."""
-        return self._angle
-
-    def set_angle(self, new_angle):
-        """Updates the angle applied to the menu buttons.
-            Expects a number.
-        """
-        if isinstance (new_angle, (int, float)):
-            self._angle = new_angle
-    angle = property (get_angle, set_angle)
-
-    def get_buttons(self):
-        """Returns the menu buttons."""
-        return self._buttons
-    buttons = property(get_buttons) # Allows only Menu update buttons
-
-    def get_title(self):
-        """Returns the text obects used for the menu title"""
-        return self._title
-    title = property(get_title) # Allows only Menu update buttons
 
     def create_buttons(self): 
         """Creates Menu buttons with the init parameters."""
@@ -430,40 +361,45 @@ class Title():
     def __init__(self, text, color, font, x, y):
         """Initializes the Menu text with the required parameters."""
 
-        self.text = text
-        self.font = font
+        self._text = text
+        self._font = font
 
-        self.color = color
+        self._color = color
 
-        self.surface = self.font.render(self.text, True, self.color)
-        self.rect = self.surface.get_rect(center = (x, y))
+        self._surface = self._font.render(self._text, True, self._color)
+        self._rect = self._surface.get_rect(center = (x, y))
 
+    def get_rect(self):
+        """Returns the rectangle used to posiiton the Menu title"""
+        return self._rect
+    rect = property(get_rect)
+    
     def text_set_position(self, x, y):
         """Sets Menu text position with rect."""
-        self.rect.center = (x, y) # uses and stores rect when called
+        self._rect.center = (x, y) # uses and stores rect when called
         
     def draw(self, game_window):
         """Draws the Title."""
-        game_window.blit(self.surface, self.rect)
+        game_window.blit(self._surface, self._rect)
 
 class Settings (Screen):
     """Controls the speed of the game."""
 
     def __init__(self, screen_width, screen_height, font, normal_color, hover_color):
         """Initializes the attributes of Settings Screen"""
-        self.screen_width = screen_width
-        self.screen_height = screen_height
+        self._screen_width = screen_width
+        self._screen_height = screen_height
 
-        self.font = font
+        self._font = font
 
-        self.normal_color = normal_color
-        self.hover_color = hover_color
+        self._normal_color = normal_color
+        self._hover_color = hover_color
 
-        self.angle = 0
+        self._angle = 0
 
-        self.buttons = []
+        self._buttons = []
 
-        self.selected_speed = "Normal"
+        self._selected_speed = "Normal"
 
         self.create_setting_buttons()
         self.update_layout(screen_width, screen_height)
@@ -471,18 +407,18 @@ class Settings (Screen):
 
     def create_setting_buttons (self):
         """Creates the Settings Buttons."""
-        fast_button = Button("Fast", 0, 0, 300, 100, self.normal_color, self.hover_color, self.font, self.angle)
-        normal_button = Button("Normal", 0, 0, 300, 100, self.normal_color, self.hover_color, self.font, self.angle)
-        slow_button = Button("Slow", 0, 0, 300, 100, self.normal_color, self.hover_color, self.font,  self.angle)
-        back_button = Button("Back", 0, 0, 300, 100, self.normal_color, self.hover_color, self.font, self.angle)
-        self.buttons.extend([fast_button, normal_button, slow_button, back_button])
+        fast_button = Button("Fast", 0, 0, 300, 100, self._normal_color, self._hover_color, self._font, self._angle)
+        normal_button = Button("Normal", 0, 0, 300, 100, self._normal_color, self._hover_color, self._font, self._angle)
+        slow_button = Button("Slow", 0, 0, 300, 100, self._normal_color, self._hover_color, self._font,  self._angle)
+        back_button = Button("Back", 0, 0, 300, 100, self._normal_color, self._hover_color, self._font, self._angle)
+        self._buttons.extend([fast_button, normal_button, slow_button, back_button])
 
     def update(self):
         """Stores mouse coordinates in a variable and passes it to the settings button."""
 
         mouse_position = pygame.mouse.get_pos() # Stores mouse position 
 
-        for button in self.buttons:
+        for button in self._buttons:
             button.update(mouse_position)
 
     
@@ -490,23 +426,23 @@ class Settings (Screen):
         """Loops through defined list and executes their draw function."""
 
         # draws settings buttons
-        for button in self.buttons:
+        for button in self._buttons:
             button.draw(game_window)
 
         # Draws text that shows selected speed choice
-        selected_setting_surface = SCORE_FONT.render(f"Selected speed: {self.selected_speed}", True, UI_WHITE)
-        selected_setting_rect = selected_setting_surface.get_rect(center = (self.screen_width // 2, 35))
+        selected_setting_surface = SCORE_FONT.render(f"Selected speed: {self._selected_speed}", True, UI_WHITE)
+        selected_setting_rect = selected_setting_surface.get_rect(center = (self._screen_width // 2, 35))
 
         game_window.blit (selected_setting_surface, selected_setting_rect)
     
     def handle_event(self, event):
         """Handles (button) events in the setting screen."""
-        for button in self.buttons:
+        for button in self._buttons:
             if button.handle_event(event): 
 
                 # return button text if it is a speed option      
                 if button.text in ("Fast", "Normal", "Slow"):
-                    self.selected_speed = button.text # Assigns equivalent speed value based on text 
+                    self._selected_speed = button.text # Assigns equivalent speed value based on text 
                 return button.text # returns name of clicked button to Game Class for processing 
             
         return None
@@ -515,26 +451,26 @@ class Settings (Screen):
         """Updates the layout of elements in the Setting screen."""
 
         #  Receives current screen width & height from the Game Class
-        self.screen_width = width
-        self.screen_height = height
+        self._screen_width = width
+        self._screen_height = height
 
         #  Calculates Button height & width using percentages 
-        button_height = self.screen_height * 0.15
-        button_width =  self.screen_width * 0.4
+        button_height = self._screen_height * 0.15
+        button_width =  self._screen_width * 0.4
 
         #  Calculates total button height
-        total_button_height = len(self.buttons) * button_height
+        total_button_height = len(self._buttons) * button_height
 
          #  Calculates vertical spacing between each button 
-        remaining_height = self.screen_height - total_button_height
-        vertical_space = remaining_height / (len(self.buttons) + 1)
+        remaining_height = self._screen_height - total_button_height
+        vertical_space = remaining_height / (len(self._buttons) + 1)
 
         #  Defines coordinate position to start drawing the buttons
-        start_x = (self.screen_width - button_width) / 2
+        start_x = (self._screen_width - button_width) / 2
         y = vertical_space        
 
         # Loop to iterate and arrange all the buttons in the list
-        for button in self.buttons: 
+        for button in self._buttons: 
             button.w = button_width
             button.h = button_height
 

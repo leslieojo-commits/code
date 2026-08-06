@@ -3,9 +3,9 @@ main.py
 
 This module serves as the entry point for the Snake game application.
 
-It initialises the game object and starts teh main game loop, 
-which controls the event handling, updating game states, drawing game elements
-and rendering the display.
+It initialises the Game object and starts the main game loop, 
+which controls the event handling, game states updates , drawing 
+display rendering.
 """
 
 # ========================
@@ -31,7 +31,7 @@ while game.running:
     #  Calls game class to process events contained in the main loop.
     game.process_events()
 
-    #  Calls game class to update events that affects the enitre game 
+    #  Calls game class to update events that affect the enitre game 
     #  such as passing updated screen sizes etc.  
     game.update()
 

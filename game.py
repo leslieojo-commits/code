@@ -80,7 +80,7 @@ SCORE_FONT_SIZE = 20
 
 # Pause font
 PAUSE_FONT_PATH = f"{FONT_FOLDER}\\Poppins-SemiBold.ttf"
-PAUSE_FONT_SIZE = 12
+PAUSE_FONT_SIZE = 15
 
 # Button Angle
 MENU_BTN_ANGLE = -5

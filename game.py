@@ -249,7 +249,6 @@ class Screen:
 
 class Menu(Screen):  
     """Controls behaiviour of elements contained in the Menu (Button, Text etc.)"""
-
     def __init__(self, screen_width, screen_height, font, normal_color, hover_color):
         """ Initializes Menu Object with required 
             attributes (screen width & height, font, 
@@ -310,13 +309,14 @@ class Menu(Screen):
             button.w = button_width
             button.h = button_height
 
+            # creates a surfaceobject for the button and sets the position
             button.surface = pygame.Surface((button.w, button.h), pygame.SRCALPHA)
             button.rect = button.surface.get_rect(center=(x + button.w / 2, y + button.h / 2))
 
             #  Updates button y position and creates the space between buttons
             y += button_height + space
 
-        # Calculates Menu title position
+        # Calculates Menu title position as a percentage
         title_x = self._screen_width * 0.85  
         title_y = self._screen_height * 0.80
 
@@ -356,7 +356,7 @@ class Menu(Screen):
         return None
 
 class Title():
-    """Controls the attributes of the Menu Text."""
+    """Controls the attributes of the Menu Title."""
 
     def __init__(self, text, color, font, x, y):
         """Initializes the Menu text with the required parameters."""
